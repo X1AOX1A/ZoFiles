@@ -41,8 +41,6 @@ ZoFiles ships with a [Claude Code skill](https://docs.anthropic.com/en/docs/clau
 
 ![Claude Code reading papers with ZoFiles skill](docs/skill-demo.png)
 
-> The skill works with any folder structure matching the ZoFiles format — you don't need to mention "ZoFiles" in your prompts.
-
 ## Exported File Structure
 
 ```

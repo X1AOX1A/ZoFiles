@@ -178,3 +178,9 @@ gh release create vX.Y.Z .scaffold/build/zo-files.xpi --title "ZoFiles vX.Y.Z"
 - Try/catch with graceful failure in providers (never crash the whole export)
 - Log with `ztoolkit.log("[ZoFiles] ...")`
 - Both `en-US` and `zh-CN` localization for all user-facing strings
+
+## Before Committing
+
+1. **Run `npx prettier --write .`** — CI enforces Prettier; commits with formatting issues will fail.
+2. **Check if docs need updating** — if you changed preferences, added features, or modified the public API, update `README.md` and/or this `CLAUDE.md` accordingly.
+3. **Run `npm run build`** — ensure the build and type-check pass (`tsc --noEmit`).
