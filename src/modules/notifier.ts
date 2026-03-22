@@ -54,9 +54,7 @@ export function registerNotifier(): void {
     NOTIFIER_ID,
   );
 
-  ztoolkit.log(
-    `[ZoFiles] Notifier registered (id=${notifierCallbackId})`,
-  );
+  ztoolkit.log(`[ZoFiles] Notifier registered (id=${notifierCallbackId})`);
 }
 
 /**
@@ -66,9 +64,7 @@ export function registerNotifier(): void {
 export function unregisterNotifier(): void {
   if (notifierCallbackId) {
     Zotero.Notifier.unregisterObserver(notifierCallbackId);
-    ztoolkit.log(
-      `[ZoFiles] Notifier unregistered (id=${notifierCallbackId})`,
-    );
+    ztoolkit.log(`[ZoFiles] Notifier unregistered (id=${notifierCallbackId})`);
     notifierCallbackId = null;
   }
   // Invalidate any pending debounced rebuild by bumping generation
@@ -104,7 +100,11 @@ async function onNotify(
 
   if (type === "item" && !handledItemEvents.includes(event)) return;
   if (type === "collection" && !handledCollectionEvents.includes(event)) return;
-  if (type === "collection-item" && !handledCollectionItemEvents.includes(event)) return;
+  if (
+    type === "collection-item" &&
+    !handledCollectionItemEvents.includes(event)
+  )
+    return;
 
   ztoolkit.log(`[ZoFiles] Notify: ${type}/${event} [${ids.join(", ")}]`);
 
@@ -211,9 +211,7 @@ async function handleItemEvent(
           type: "success",
         });
       } catch (err: any) {
-        ztoolkit.log(
-          `[ZoFiles] Removal failed: ${err.message || err}`,
-        );
+        ztoolkit.log(`[ZoFiles] Removal failed: ${err.message || err}`);
         progressWin.changeLine({
           idx: 0,
           text: `Removal failed`,
@@ -239,9 +237,7 @@ async function handleItemEvent(
  */
 async function handleCollectionEvent(event: string): Promise<void> {
   if (event === "modify" || event === "delete") {
-    ztoolkit.log(
-      `[ZoFiles] collection/${event}: scheduling full rebuild`,
-    );
+    ztoolkit.log(`[ZoFiles] collection/${event}: scheduling full rebuild`);
     debouncedRebuild();
   }
 }
@@ -315,9 +311,7 @@ async function handleCollectionItemEvent(
       // Item removed from a collection — re-export to clean up stale paths
       // A full rebuild is more reliable here since we need to remove folders
       // from the old collection path and the item may still be in other collections
-      ztoolkit.log(
-        `[ZoFiles] collection-item/remove: scheduling full rebuild`,
-      );
+      ztoolkit.log(`[ZoFiles] collection-item/remove: scheduling full rebuild`);
       debouncedRebuild();
       break;
   }
@@ -376,7 +370,11 @@ function parseCollectionItemIds(ids: Array<string | number>): number[] {
 /**
  * Get display info for an item (arXiv ID + truncated title) for notifications.
  */
-function getItemInfo(itemId: number): { arxivId: string; title: string; display: string } {
+function getItemInfo(itemId: number): {
+  arxivId: string;
+  title: string;
+  display: string;
+} {
   try {
     const item = Zotero.Items.get(itemId);
     if (item) {
@@ -426,12 +424,10 @@ function debouncedRebuild(): void {
       ztoolkit.log("[ZoFiles] Executing debounced incremental rebuild");
       const exporter = getExporter();
       const result = await exporter.incrementalRebuild((info) => {
-        const pct = info.total > 0
-          ? Math.round((info.current / info.total) * 100)
-          : 0;
-        const truncTitle = info.title.length > 40
-          ? info.title.slice(0, 37) + "..."
-          : info.title;
+        const pct =
+          info.total > 0 ? Math.round((info.current / info.total) * 100) : 0;
+        const truncTitle =
+          info.title.length > 40 ? info.title.slice(0, 37) + "..." : info.title;
         progressWin.changeLine({
           idx: 0,
           text: `[${info.current}/${info.total}] ${info.arxivId} — ${truncTitle}`,
@@ -439,9 +435,10 @@ function debouncedRebuild(): void {
         });
       });
 
-      const summary = result.exported > 0 || result.removed > 0
-        ? `Done: ${result.exported} exported, ${result.removed} removed`
-        : `Up to date (${result.skipped} items)`;
+      const summary =
+        result.exported > 0 || result.removed > 0
+          ? `Done: ${result.exported} exported, ${result.removed} removed`
+          : `Up to date (${result.skipped} items)`;
 
       progressWin.changeLine({
         idx: 0,

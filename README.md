@@ -27,7 +27,7 @@ ZoFiles turns your Zotero library into an agent-readable filesystem — mirrorin
 
 ![ZoFiles exported file structure in Finder](docs/screenshot.png)
 
-> See a real exported paper folder: [`docs/example/`](docs/example/1706.03762%20-%20Attention%20Is%20All%20You%20Need/) — *Attention Is All You Need* with PDF, Markdown, BibTeX, Kimi review, and notes.
+> See a real exported paper folder: [`docs/example/`](docs/example/1706.03762%20-%20Attention%20Is%20All%20You%20Need/) — _Attention Is All You Need_ with PDF, Markdown, BibTeX, Kimi review, and notes.
 
 ### Skills — AI-Powered Paper Reading
 
@@ -119,14 +119,14 @@ By default, all collections are exported. Uncheck any collections you want to ex
 
 Choose which files to generate for each paper:
 
-| Content | Description | Default |
-|---|---|---|
-| **PDF** | Symlink or copy of the PDF attachment | ✅ On |
-| **Paper Markdown** | Full-text conversion via arxiv2md.org | ✅ On |
-| **Kimi Review** | AI-generated summary from papers.cool | ✅ On |
-| **BibTeX** | Citation data from arXiv | ✅ On |
-| **Zotero Notes** | Your notes, converted to Markdown | ✅ On |
-| **arXiv ID file** | Plain text file with the arXiv identifier | ✅ On |
+| Content            | Description                               | Default |
+| ------------------ | ----------------------------------------- | ------- |
+| **PDF**            | Symlink or copy of the PDF attachment     | ✅ On   |
+| **Paper Markdown** | Full-text conversion via arxiv2md.org     | ✅ On   |
+| **Kimi Review**    | AI-generated summary from papers.cool     | ✅ On   |
+| **BibTeX**         | Citation data from arXiv                  | ✅ On   |
+| **Zotero Notes**   | Your notes, converted to Markdown         | ✅ On   |
+| **arXiv ID file**  | Plain text file with the arXiv identifier | ✅ On   |
 
 > **Note:** Kimi Review requires a network request per paper. Some papers may not have a review available yet — the provider will fail gracefully for those.
 
@@ -137,6 +137,7 @@ Click **Rebuild** at the bottom of the settings panel. ZoFiles will scan all you
 A progress window will appear in the bottom-right corner showing the current item being processed. After completion, check your export root directory — you should see the full collection tree with per-paper folders.
 
 > **Rebuild vs Force Full Rebuild:**
+>
 > - **Rebuild** (default) — Incremental. Only exports new or changed items and removes stale ones. Fast when most items are already exported.
 > - **Force Full Rebuild** — Deletes the entire export directory and re-exports everything from scratch. Use this if the export gets into a broken state.
 >
@@ -159,25 +160,25 @@ The read-paper skill works out of the box if you use Claude Code within a ZoFile
 
 ## Configuration Reference
 
-| Setting | Description | Default |
-|---|---|---|
-| Export Root | Directory where the paper tree is created | *(must be set)* |
-| Folder Format | Paper folder naming template | `{arxivId} - {title}` |
-| PDF Mode | Symlink (saves space) or Copy | Symlink |
-| Export Content | Toggle each content type on/off | All on |
-| Collections | Choose which collections to export | All |
-| Auto Sync | Automatically export on changes | On |
-| Link Back | Create linked attachments in Zotero | Off |
-| Cache Path | Cache directory for downloaded content | `~/.cache/ZoFiles` |
+| Setting        | Description                               | Default               |
+| -------------- | ----------------------------------------- | --------------------- |
+| Export Root    | Directory where the paper tree is created | _(must be set)_       |
+| Folder Format  | Paper folder naming template              | `{arxivId} - {title}` |
+| PDF Mode       | Symlink (saves space) or Copy             | Symlink               |
+| Export Content | Toggle each content type on/off           | All on                |
+| Collections    | Choose which collections to export        | All                   |
+| Auto Sync      | Automatically export on changes           | On                    |
+| Link Back      | Create linked attachments in Zotero       | Off                   |
+| Cache Path     | Cache directory for downloaded content    | `~/.cache/ZoFiles`    |
 
 ### Folder Format Tokens
 
-| Token | Example |
-|---|---|
-| `{arxivId}` | `2311.10702` |
-| `{title}` | `Attention Is All You Need` |
-| `{firstAuthor}` | `Vaswani` |
-| `{year}` | `2017` |
+| Token           | Example                     |
+| --------------- | --------------------------- |
+| `{arxivId}`     | `2311.10702`                |
+| `{title}`       | `Attention Is All You Need` |
+| `{firstAuthor}` | `Vaswani`                   |
+| `{year}`        | `2017`                      |
 
 Default: `{arxivId} - {title}`
 

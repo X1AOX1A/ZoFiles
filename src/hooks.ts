@@ -121,9 +121,7 @@ function showWelcomeDialog(win: _ZoteroTypes.MainWindow): void {
       if (dialogData._lastButtonId === "open-settings") {
         // Open Zotero Settings and navigate to ZoFiles pane
         setTimeout(() => {
-          Zotero.Utilities.Internal.openPreferences(
-            addon.data.config.addonID,
-          );
+          Zotero.Utilities.Internal.openPreferences(addon.data.config.addonID);
         }, 300);
       }
     });

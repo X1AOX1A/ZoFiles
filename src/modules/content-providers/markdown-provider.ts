@@ -21,17 +21,13 @@ class RateLimiter {
   async acquire(): Promise<void> {
     const now = Date.now();
     // Remove timestamps outside the window
-    this.timestamps = this.timestamps.filter(
-      (t) => now - t < this.windowMs,
-    );
+    this.timestamps = this.timestamps.filter((t) => now - t < this.windowMs);
 
     if (this.timestamps.length >= this.maxRequests) {
       // Wait until the oldest request in the window expires
       const oldest = this.timestamps[0];
       const waitMs = this.windowMs - (now - oldest) + 100; // +100ms buffer
-      await new Promise((resolve) =>
-        Zotero.setTimeout(resolve, waitMs),
-      );
+      await new Promise((resolve) => Zotero.setTimeout(resolve, waitMs));
       return this.acquire(); // Re-check after waiting
     }
 

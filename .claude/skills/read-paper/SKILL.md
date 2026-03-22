@@ -43,6 +43,7 @@ The library mirrors the user's Zotero collection hierarchy. Collections become d
 ```
 
 **Key patterns:**
+
 - **`Allin/` directories** appear when a collection has both sub-collections and direct papers. The direct papers go into `Allin/` to avoid mixing folders and paper directories.
 - **Paper folders** are always named `{arxivId} - {title}` (e.g. `2512.18832 - From Word to World Can Large Language Models be Implicit Text-based World Models`).
 - To **find a paper by arXiv ID**, use glob: `**/2512.18832*` from the library root.
@@ -51,14 +52,14 @@ The library mirrors the user's Zotero collection hierarchy. Collections become d
 
 ## Files in a Paper Folder
 
-| File | What it is | When to read it |
-|---|---|---|
-| `paper.md` | Full-text Markdown of the paper | **Primary source.** Read this for any paper-related task. |
-| `paper.bib` | BibTeX citation entry | When citing. **Always copy verbatim — never generate BibTeX yourself.** |
-| `kimi.md` | AI-generated review in Chinese (Q&A format) | Optional. Useful as a quick overview or to answer high-level questions without reading the full paper. Primarily for human consumption. |
-| `arxiv.id` | Plain text arXiv ID (e.g. `2505.17746`) | When you need the paper's identifier or arXiv URL. |
-| `notes/` | Directory of the user's personal notes as Markdown files | When the user asks about their notes or annotations on a paper. |
-| `paper.pdf` | Original PDF (or symlink to it) | Only read if specifically asked — prefer `paper.md` which is the same content in a more parseable format. |
+| File        | What it is                                               | When to read it                                                                                                                         |
+| ----------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `paper.md`  | Full-text Markdown of the paper                          | **Primary source.** Read this for any paper-related task.                                                                               |
+| `paper.bib` | BibTeX citation entry                                    | When citing. **Always copy verbatim — never generate BibTeX yourself.**                                                                 |
+| `kimi.md`   | AI-generated review in Chinese (Q&A format)              | Optional. Useful as a quick overview or to answer high-level questions without reading the full paper. Primarily for human consumption. |
+| `arxiv.id`  | Plain text arXiv ID (e.g. `2505.17746`)                  | When you need the paper's identifier or arXiv URL.                                                                                      |
+| `notes/`    | Directory of the user's personal notes as Markdown files | When the user asks about their notes or annotations on a paper.                                                                         |
+| `paper.pdf` | Original PDF (or symlink to it)                          | Only read if specifically asked — prefer `paper.md` which is the same content in a more parseable format.                               |
 
 ## How to Read paper.md Efficiently
 
@@ -72,7 +73,6 @@ url: "https://arxiv.org/abs/XXXX.XXXXX"
 sections: 27
 estimated_tokens: "12.9k"
 ---
-
 ## Contents
 - 1 Introduction
 - 2 Related Works
@@ -81,6 +81,7 @@ estimated_tokens: "12.9k"
 ```
 
 **Reading strategy:**
+
 1. **Start with the frontmatter + table of contents** — this tells you the paper's structure, size (`estimated_tokens`), and lets you decide what to read
 2. **Read selectively by section** — use the ToC to jump to relevant sections. No need to read the entire paper for most tasks.
 3. **For a quick overview**: read Introduction + Conclusion (usually sections 1 and the last numbered section)

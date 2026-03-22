@@ -15,6 +15,7 @@ import { getPref } from "../utils/prefs";
  */
 export function sanitizeFilename(name: string, maxLen = 200): string {
   // Replace path separators and other bad chars
+  // eslint-disable-next-line no-control-regex
   let result = name.replace(/[<>:"/\\|?*\x00-\x1f]/g, "_");
   // Collapse multiple underscores/spaces
   result = result.replace(/[_\s]+/g, " ").trim();
@@ -69,9 +70,7 @@ export function formatPaperFolder(item: Zotero.Item, arxivId?: string): string {
   const creators = item.getCreators();
   const firstAuthor =
     creators.length > 0 ? creators[0].lastName || "Unknown" : "Unknown";
-  const authors = creators.map(
-    (c) => c.lastName || c.firstName || "Unknown",
-  );
+  const authors = creators.map((c) => c.lastName || c.firstName || "Unknown");
 
   // Extract year from date field
   const dateStr = String(item.getField("date") || "");

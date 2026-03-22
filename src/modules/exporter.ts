@@ -193,9 +193,12 @@ export class Exporter {
    *
    * @param onProgress Optional callback invoked per-item with progress info
    */
-  async incrementalRebuild(
-    onProgress?: RebuildProgressCallback,
-  ): Promise<{ exported: number; skipped: number; removed: number; errors: string[] }> {
+  async incrementalRebuild(onProgress?: RebuildProgressCallback): Promise<{
+    exported: number;
+    skipped: number;
+    removed: number;
+    errors: string[];
+  }> {
     const exportRoot = getExportRoot();
     if (!exportRoot) {
       throw new Error("Export root path is not configured");
@@ -560,9 +563,7 @@ export class Exporter {
         try {
           await removeDir(paperDir);
         } catch (e: any) {
-          ztoolkit.log(
-            `[ZoFiles] Failed to remove ${paperDir}: ${e.message}`,
-          );
+          ztoolkit.log(`[ZoFiles] Failed to remove ${paperDir}: ${e.message}`);
         }
       }
 
@@ -608,9 +609,7 @@ export class Exporter {
     // Extract arXiv ID — skip items without one
     const rawArxivId = extractArxivId(item);
     if (!rawArxivId) {
-      ztoolkit.log(
-        `[ZoFiles] Skipping item ${itemId}: no arXiv ID found`,
-      );
+      ztoolkit.log(`[ZoFiles] Skipping item ${itemId}: no arXiv ID found`);
       return;
     }
     const arxivId = stripVersion(rawArxivId);
@@ -634,13 +633,9 @@ export class Exporter {
 
       // Log diagnostic info to help debug
       const collections = item.getCollections();
-      ztoolkit.log(
-        `[ZoFiles]   Item collections: [${collections.join(", ")}]`,
-      );
+      ztoolkit.log(`[ZoFiles]   Item collections: [${collections.join(", ")}]`);
       const enabledJson = getPref("enabledCollections") as string;
-      ztoolkit.log(
-        `[ZoFiles]   enabledCollections pref: ${enabledJson}`,
-      );
+      ztoolkit.log(`[ZoFiles]   enabledCollections pref: ${enabledJson}`);
       return;
     }
 
@@ -760,9 +755,7 @@ export class Exporter {
       arxivId,
       folderName,
       exportedPaths: allExportedPaths,
-      files: allFiles.map((f) =>
-        f.replace(paperDir, "").replace(/^[/\\]/, ""),
-      ),
+      files: allFiles.map((f) => f.replace(paperDir, "").replace(/^[/\\]/, "")),
       lastExported: Date.now(),
     };
     await this.saveIndex(exportRoot);
@@ -870,9 +863,7 @@ export class Exporter {
           title: expectedTitle,
         });
         existingTitles.add(expectedTitle);
-        ztoolkit.log(
-          `[ZoFiles] Linked ${fileName} back to item ${item.id}`,
-        );
+        ztoolkit.log(`[ZoFiles] Linked ${fileName} back to item ${item.id}`);
       } catch (e: any) {
         ztoolkit.log(
           `[ZoFiles] Failed to link ${filePath} to item ${item.id}: ${e.message}`,

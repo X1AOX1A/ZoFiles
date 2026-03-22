@@ -107,10 +107,7 @@ async function buildNode(
 /**
  * Check if any descendant of the given collection is in the enabled list.
  */
-function hasEnabledDescendant(
-  collection: any,
-  enabledIds: number[],
-): boolean {
+function hasEnabledDescendant(collection: any, enabledIds: number[]): boolean {
   for (const child of collection.getChildCollections()) {
     if (enabledIds.includes(child.id)) return true;
     if (hasEnabledDescendant(child, enabledIds)) return true;

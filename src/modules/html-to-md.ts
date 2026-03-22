@@ -73,11 +73,14 @@ export function htmlToMarkdown(html: string): string {
   text = text.replace(/<hr[^>]*\/?>/gi, "\n---\n");
 
   // Unordered lists
-  text = text.replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (_: string, content: string) => {
-    return (
-      "\n" + content.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, "- $1\n") + "\n"
-    );
-  });
+  text = text.replace(
+    /<ul[^>]*>([\s\S]*?)<\/ul>/gi,
+    (_: string, content: string) => {
+      return (
+        "\n" + content.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, "- $1\n") + "\n"
+      );
+    },
+  );
 
   // Ordered lists
   text = text.replace(

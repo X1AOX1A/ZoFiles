@@ -40,48 +40,50 @@ filesystem (IOUtils / PathUtils)
 
 ## Key Files
 
-| File | Purpose | When to touch |
-|---|---|---|
-| `src/modules/exporter.ts` | Core export logic, queue, rebuild, index management | Export behavior, path resolution, cleanup |
-| `src/modules/notifier.ts` | Event dispatch, progress notifications | Adding new event handlers |
-| `src/modules/tree-builder.ts` | Collection → directory mapping, `Allin/` logic | Changing how collections map to folders |
-| `src/modules/preferences.ts` | Settings panel wiring, rebuild buttons | Adding new preferences |
-| `src/modules/content-providers/` | Pluggable content generators | Adding new export file types |
-| `src/modules/arxiv-id.ts` | arXiv ID extraction from multiple fields | Changing paper identification |
-| `src/modules/utils.ts` | `ensureDir`, `joinPath`, `removeDir`, `formatPaperFolder`, `getCachePath` | Filesystem operations |
-| `src/hooks.ts` | Plugin lifecycle (startup, shutdown, window load) | Init/cleanup logic |
-| `addon/prefs.js` | Default preference values | Adding new settings |
-| `addon/content/preferences.xhtml` | Settings panel UI (XUL/XHTML) | Settings UI changes |
-| `addon/locale/{en-US,zh-CN}/preferences.ftl` | Localization strings | Any user-facing text |
+| File                                         | Purpose                                                                   | When to touch                             |
+| -------------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------- |
+| `src/modules/exporter.ts`                    | Core export logic, queue, rebuild, index management                       | Export behavior, path resolution, cleanup |
+| `src/modules/notifier.ts`                    | Event dispatch, progress notifications                                    | Adding new event handlers                 |
+| `src/modules/tree-builder.ts`                | Collection → directory mapping, `Allin/` logic                            | Changing how collections map to folders   |
+| `src/modules/preferences.ts`                 | Settings panel wiring, rebuild buttons                                    | Adding new preferences                    |
+| `src/modules/content-providers/`             | Pluggable content generators                                              | Adding new export file types              |
+| `src/modules/arxiv-id.ts`                    | arXiv ID extraction from multiple fields                                  | Changing paper identification             |
+| `src/modules/utils.ts`                       | `ensureDir`, `joinPath`, `removeDir`, `formatPaperFolder`, `getCachePath` | Filesystem operations                     |
+| `src/hooks.ts`                               | Plugin lifecycle (startup, shutdown, window load)                         | Init/cleanup logic                        |
+| `addon/prefs.js`                             | Default preference values                                                 | Adding new settings                       |
+| `addon/content/preferences.xhtml`            | Settings panel UI (XUL/XHTML)                                             | Settings UI changes                       |
+| `addon/locale/{en-US,zh-CN}/preferences.ftl` | Localization strings                                                      | Any user-facing text                      |
 
 ## Preference Keys (addon/prefs.js)
 
-| Key | Type | Default | Description |
-|---|---|---|---|
-| `exportRoot` | string | `""` | Root directory for export tree |
-| `cachePath` | string | `""` | Cache dir (falls back to `~/.cache/ZoFiles`) |
-| `paperFolderFormat` | string | `"{arxivId} - {title}"` | Paper folder naming template |
-| `enabledCollections` | string (JSON) | `"[]"` | JSON array of enabled collection IDs (empty = all) |
-| `exportPdf` | bool | `true` | Export PDF |
-| `exportMarkdown` | bool | `true` | Export full-text Markdown |
-| `exportKimi` | bool | `true` | Export Kimi AI review |
-| `exportBibtex` | bool | `true` | Export BibTeX |
-| `exportNotes` | bool | `true` | Export Zotero notes |
-| `exportArxivId` | bool | `true` | Export arXiv ID file |
-| `pdfMode` | string | `"symlink"` | `"symlink"` or `"copy"` |
-| `linkBackToZotero` | bool | `false` | Create linked attachments in Zotero |
-| `autoSync` | bool | `true` | Auto-export on changes |
+| Key                  | Type          | Default                 | Description                                        |
+| -------------------- | ------------- | ----------------------- | -------------------------------------------------- |
+| `exportRoot`         | string        | `""`                    | Root directory for export tree                     |
+| `cachePath`          | string        | `""`                    | Cache dir (falls back to `~/.cache/ZoFiles`)       |
+| `paperFolderFormat`  | string        | `"{arxivId} - {title}"` | Paper folder naming template                       |
+| `enabledCollections` | string (JSON) | `"[]"`                  | JSON array of enabled collection IDs (empty = all) |
+| `exportPdf`          | bool          | `true`                  | Export PDF                                         |
+| `exportMarkdown`     | bool          | `true`                  | Export full-text Markdown                          |
+| `exportKimi`         | bool          | `true`                  | Export Kimi AI review                              |
+| `exportBibtex`       | bool          | `true`                  | Export BibTeX                                      |
+| `exportNotes`        | bool          | `true`                  | Export Zotero notes                                |
+| `exportArxivId`      | bool          | `true`                  | Export arXiv ID file                               |
+| `pdfMode`            | string        | `"symlink"`             | `"symlink"` or `"copy"`                            |
+| `linkBackToZotero`   | bool          | `false`                 | Create linked attachments in Zotero                |
+| `autoSync`           | bool          | `true`                  | Auto-export on changes                             |
 
 ## Content Providers
 
 Execution order (fast → slow): ArxivId → PDF → BibTeX → Notes → Kimi → Markdown
 
 Each provider extends `BaseProvider` and implements:
+
 - `export(ctx: ExportContext) → ProviderResult` — generate the file
 - `cleanup(paperDir) → void` — remove the file
 - `isEnabled() → bool` — checks user pref
 
 To add a new provider:
+
 1. Create `src/modules/content-providers/my-provider.ts` extending `BaseProvider`
 2. Add pref key to `addon/prefs.js` and UI toggle to `preferences.xhtml`
 3. Register in `registry.ts` (order matters — fast/local first)
@@ -90,12 +92,15 @@ To add a new provider:
 ## Exporter Internals
 
 ### ExportQueue
+
 - Debounced (500ms), max concurrency 3
 - Deduplicates: multiple enqueues for same itemId share one task
 - Uses generation counter pattern for debounce invalidation
 
 ### incrementalRebuild
+
 Compares `.zofiles-index.json` with current Zotero state. Categorizes items into:
+
 - `toExport` — new items not in index
 - `toCleanAndReExport` — paths changed (moved between collections)
 - `toCleanOnly` — removed from all exported collections
@@ -103,7 +108,9 @@ Compares `.zofiles-index.json` with current Zotero state. Categorizes items into
 - `upToDate` — no changes needed
 
 ### doExportItem
+
 Single-item export flow:
+
 1. Validate item + extract arXiv ID
 2. Build/reuse collection tree
 3. Resolve target directories
@@ -114,30 +121,38 @@ Single-item export flow:
 8. Update index
 
 ### Stale Path Cleanup
+
 `doExportItem` compares the previous index entry's `exportedPaths` with the new paths. Paths no longer needed are deleted. This handles the race condition where `item/modify` fires before the debounced `incrementalRebuild`.
 
 ## Known Issues / Pitfalls
 
 ### `Zotero.setTimeout` Does NOT Exist in Zotero 8
+
 Use standard `setTimeout` everywhere. The markdown-provider's `RateLimiter` (line 33) still has `Zotero.setTimeout` — **this is a known bug**. It doesn't crash because most requests hit cache, but will fail on uncached rate-limited requests.
 
 ### Event Ordering Race Condition
+
 When removing an item from a collection, Zotero fires both `item/modify` and `collection-item/remove`. The `item/modify` handler (immediate) runs before the debounced `incrementalRebuild` (1.5s delay). The fix is in `doExportItem` which now cleans stale paths before updating the index.
 
 ### `item/redraw` Event Flooding
+
 Zotero fires hundreds of `item/redraw` events per second. The notifier filters these out early with:
+
 ```typescript
 const handledItemEvents = ["add", "modify", "trash", "delete"];
 if (type === "item" && !handledItemEvents.includes(event)) return;
 ```
 
 ### Link-Back Deduplication
+
 Link-back uses attachment **title** (`[ZoFiles] filename`) for dedup, not file path. Path-based dedup fails when items move between collections. Stale link-back attachments (pointing to deleted files) are automatically cleaned up.
 
 ### Rebuild is Sequential
+
 Both `fullRebuild` and `incrementalRebuild` process items sequentially. Could be parallelized with a concurrency pool, but need to fix the rate limiter bug first (`Zotero.setTimeout`).
 
 ### IOUtils / PathUtils
+
 These are Mozilla platform APIs available in Zotero's privileged context. No `import` needed — they're globals. Use `IOUtils.write()`, `IOUtils.read()`, `IOUtils.exists()`, `IOUtils.remove()`, `PathUtils.filename()`, etc.
 
 ## Zotero Plugin Patterns

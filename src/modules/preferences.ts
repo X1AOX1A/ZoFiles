@@ -57,9 +57,9 @@ export async function registerPrefsScripts(_window: Window): Promise<void> {
  * Display the current export root path in the text field.
  */
 function initExportRoot(doc: Document): void {
-  const input = doc.getElementById(PREF_ID("export-root")) as
-    | HTMLInputElement
-    | null;
+  const input = doc.getElementById(
+    PREF_ID("export-root"),
+  ) as HTMLInputElement | null;
   if (input) {
     input.value = (getPref("exportRoot") as string) || "";
   }
@@ -71,9 +71,9 @@ function initExportRoot(doc: Document): void {
  */
 function bindBrowseButton(doc: Document): void {
   const btn = doc.getElementById(PREF_ID("browse"));
-  const input = doc.getElementById(PREF_ID("export-root")) as
-    | HTMLInputElement
-    | null;
+  const input = doc.getElementById(
+    PREF_ID("export-root"),
+  ) as HTMLInputElement | null;
 
   // Save manually typed path on change/blur
   if (input) {
@@ -293,14 +293,7 @@ function renderCollectionNode(
   const children = collection.getChildCollections();
   children.sort((a: any, b: any) => a.name.localeCompare(b.name));
   for (const child of children) {
-    renderCollectionNode(
-      doc,
-      parent,
-      child,
-      enabledIds,
-      enableAll,
-      depth + 1,
-    );
+    renderCollectionNode(doc, parent, child, enabledIds, enableAll, depth + 1);
   }
 }
 
@@ -351,12 +344,12 @@ function saveCollectionSelections(doc: Document): void {
  * Initialize the folder format menulist (dropdown).
  */
 function initFolderFormat(doc: Document): void {
-  const menulist = doc.getElementById(PREF_ID("folder-format")) as
-    | XUL.MenuList
-    | null;
-  const customInput = doc.getElementById(PREF_ID("folder-format-custom")) as
-    | HTMLInputElement
-    | null;
+  const menulist = doc.getElementById(
+    PREF_ID("folder-format"),
+  ) as XUL.MenuList | null;
+  const customInput = doc.getElementById(
+    PREF_ID("folder-format-custom"),
+  ) as HTMLInputElement | null;
 
   if (!menulist) return;
 
@@ -389,12 +382,12 @@ function initFolderFormat(doc: Document): void {
  * Bind folder format dropdown and custom input events.
  */
 function bindFolderFormatEvents(doc: Document): void {
-  const menulist = doc.getElementById(PREF_ID("folder-format")) as
-    | XUL.MenuList
-    | null;
-  const customInput = doc.getElementById(PREF_ID("folder-format-custom")) as
-    | HTMLInputElement
-    | null;
+  const menulist = doc.getElementById(
+    PREF_ID("folder-format"),
+  ) as XUL.MenuList | null;
+  const customInput = doc.getElementById(
+    PREF_ID("folder-format-custom"),
+  ) as HTMLInputElement | null;
 
   if (!menulist) return;
 
@@ -448,9 +441,9 @@ const CONTENT_TOGGLES = [
  */
 function initContentToggles(doc: Document): void {
   for (const toggle of CONTENT_TOGGLES) {
-    const checkbox = doc.getElementById(PREF_ID(toggle.id)) as
-      | XUL.Checkbox
-      | null;
+    const checkbox = doc.getElementById(
+      PREF_ID(toggle.id),
+    ) as XUL.Checkbox | null;
     if (checkbox) {
       checkbox.checked = getPref(toggle.prefKey as any) as boolean;
     }
@@ -480,9 +473,9 @@ function bindContentToggleEvents(doc: Document): void {
  * Initialize the PDF mode radiogroup.
  */
 function initPdfMode(doc: Document): void {
-  const radiogroup = doc.getElementById(PREF_ID("pdf-mode")) as
-    | XUL.RadioGroup
-    | null;
+  const radiogroup = doc.getElementById(
+    PREF_ID("pdf-mode"),
+  ) as XUL.RadioGroup | null;
   if (!radiogroup) return;
 
   const currentMode = getPref("pdfMode") as string;
@@ -500,9 +493,9 @@ function initPdfMode(doc: Document): void {
  * Bind the PDF mode radiogroup change event.
  */
 function bindPdfModeEvents(doc: Document): void {
-  const radiogroup = doc.getElementById(PREF_ID("pdf-mode")) as
-    | XUL.RadioGroup
-    | null;
+  const radiogroup = doc.getElementById(
+    PREF_ID("pdf-mode"),
+  ) as XUL.RadioGroup | null;
   if (!radiogroup) return;
 
   radiogroup.addEventListener("command", () => {
@@ -523,26 +516,26 @@ function bindPdfModeEvents(doc: Document): void {
  */
 function initAdvancedSettings(doc: Document): void {
   // Cache path
-  const cacheInput = doc.getElementById(PREF_ID("cache-path")) as
-    | HTMLInputElement
-    | null;
+  const cacheInput = doc.getElementById(
+    PREF_ID("cache-path"),
+  ) as HTMLInputElement | null;
   if (cacheInput) {
     cacheInput.value = (getPref("cachePath") as string) || "";
     cacheInput.placeholder = "~/.cache/ZoFiles";
   }
 
   // Link back to Zotero
-  const linkBackCheckbox = doc.getElementById(PREF_ID("link-back")) as
-    | XUL.Checkbox
-    | null;
+  const linkBackCheckbox = doc.getElementById(
+    PREF_ID("link-back"),
+  ) as XUL.Checkbox | null;
   if (linkBackCheckbox) {
     linkBackCheckbox.checked = getPref("linkBackToZotero") as boolean;
   }
 
   // Auto sync
-  const autoSyncCheckbox = doc.getElementById(PREF_ID("auto-sync")) as
-    | XUL.Checkbox
-    | null;
+  const autoSyncCheckbox = doc.getElementById(
+    PREF_ID("auto-sync"),
+  ) as XUL.Checkbox | null;
   if (autoSyncCheckbox) {
     autoSyncCheckbox.checked = getPref("autoSync") as boolean;
   }
@@ -553,9 +546,9 @@ function initAdvancedSettings(doc: Document): void {
  */
 function bindAdvancedEvents(doc: Document): void {
   // Cache path — save on change
-  const cacheInput = doc.getElementById(PREF_ID("cache-path")) as
-    | HTMLInputElement
-    | null;
+  const cacheInput = doc.getElementById(
+    PREF_ID("cache-path"),
+  ) as HTMLInputElement | null;
   if (cacheInput) {
     cacheInput.addEventListener("change", () => {
       setPref("cachePath", cacheInput.value.trim());
@@ -593,9 +586,9 @@ function bindRebuildButton(doc: Document): void {
   const btn = doc.getElementById(PREF_ID("rebuild"));
   if (!btn) return;
 
-  const statusLabel = doc.getElementById(PREF_ID("rebuild-status")) as
-    | HTMLElement
-    | null;
+  const statusLabel = doc.getElementById(
+    PREF_ID("rebuild-status"),
+  ) as HTMLElement | null;
   const forceBtn = doc.getElementById(PREF_ID("force-rebuild"));
 
   btn.addEventListener("command", async () => {
@@ -627,15 +620,14 @@ function bindRebuildButton(doc: Document): void {
     try {
       const exporter = getExporter();
       const result = await exporter.incrementalRebuild((info) => {
-        const pct = info.total > 0
-          ? Math.round((info.current / info.total) * 100)
-          : 0;
-        const truncTitle = info.title.length > 40
-          ? info.title.slice(0, 37) + "..."
-          : info.title;
-        const statusText = info.status === "error"
-          ? `[${info.current}/${info.total}] ERROR: ${info.arxivId}`
-          : `[${info.current}/${info.total}] ${info.arxivId} — ${truncTitle}`;
+        const pct =
+          info.total > 0 ? Math.round((info.current / info.total) * 100) : 0;
+        const truncTitle =
+          info.title.length > 40 ? info.title.slice(0, 37) + "..." : info.title;
+        const statusText =
+          info.status === "error"
+            ? `[${info.current}/${info.total}] ERROR: ${info.arxivId}`
+            : `[${info.current}/${info.total}] ${info.arxivId} — ${truncTitle}`;
 
         progressWin.changeLine({
           idx: 0,
@@ -644,9 +636,10 @@ function bindRebuildButton(doc: Document): void {
         });
       });
 
-      const summary = result.exported > 0 || result.removed > 0
-        ? `Done: ${result.exported} exported, ${result.skipped} skipped, ${result.removed} removed`
-        : `Already up to date (${result.skipped} items)`;
+      const summary =
+        result.exported > 0 || result.removed > 0
+          ? `Done: ${result.exported} exported, ${result.skipped} skipped, ${result.removed} removed`
+          : `Already up to date (${result.skipped} items)`;
 
       progressWin.changeLine({
         idx: 0,
@@ -657,8 +650,9 @@ function bindRebuildButton(doc: Document): void {
       progressWin.startCloseTimer(5000);
 
       if (statusLabel) {
-        statusLabel.textContent = summary
-          + (result.errors.length > 0 ? `, ${result.errors.length} errors` : "");
+        statusLabel.textContent =
+          summary +
+          (result.errors.length > 0 ? `, ${result.errors.length} errors` : "");
         statusLabel.style.color = result.errors.length > 0 ? "#c80" : "#080";
       }
     } catch (err: any) {
@@ -689,9 +683,9 @@ function bindForceRebuildButton(doc: Document): void {
   const btn = doc.getElementById(PREF_ID("force-rebuild"));
   if (!btn) return;
 
-  const statusLabel = doc.getElementById(PREF_ID("rebuild-status")) as
-    | HTMLElement
-    | null;
+  const statusLabel = doc.getElementById(
+    PREF_ID("rebuild-status"),
+  ) as HTMLElement | null;
   const rebuildBtn = doc.getElementById(PREF_ID("rebuild"));
 
   btn.addEventListener("command", async () => {
@@ -725,15 +719,14 @@ function bindForceRebuildButton(doc: Document): void {
     try {
       const exporter = getExporter();
       const result = await exporter.fullRebuild((info) => {
-        const pct = info.total > 0
-          ? Math.round((info.current / info.total) * 100)
-          : 0;
-        const truncTitle = info.title.length > 40
-          ? info.title.slice(0, 37) + "..."
-          : info.title;
-        const statusText = info.status === "error"
-          ? `[${info.current}/${info.total}] ERROR: ${info.arxivId}`
-          : `[${info.current}/${info.total}] ${info.arxivId} — ${truncTitle}`;
+        const pct =
+          info.total > 0 ? Math.round((info.current / info.total) * 100) : 0;
+        const truncTitle =
+          info.title.length > 40 ? info.title.slice(0, 37) + "..." : info.title;
+        const statusText =
+          info.status === "error"
+            ? `[${info.current}/${info.total}] ERROR: ${info.arxivId}`
+            : `[${info.current}/${info.total}] ${info.arxivId} — ${truncTitle}`;
 
         progressWin.changeLine({
           idx: 0,

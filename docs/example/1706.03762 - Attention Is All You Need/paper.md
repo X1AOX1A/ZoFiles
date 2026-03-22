@@ -1,12 +1,26 @@
 ---
 title: "Attention Is All You Need"
-authors: ["Ashish Vaswani", "Google Brain", "Noam Shazeer", "Niki Parmar", "Google Research", "Jakob Uszkoreit", "Llion Jones", "Aidan N. Gomez", "University of Toronto", "Łukasz Kaiser", "Illia Polosukhin"]
+authors:
+  [
+    "Ashish Vaswani",
+    "Google Brain",
+    "Noam Shazeer",
+    "Niki Parmar",
+    "Google Research",
+    "Jakob Uszkoreit",
+    "Llion Jones",
+    "Aidan N. Gomez",
+    "University of Toronto",
+    "Łukasz Kaiser",
+    "Illia Polosukhin",
+  ]
 url: "https://arxiv.org/abs/1706.03762"
 sections: 29
 estimated_tokens: "10.9k"
 ---
 
 ## Contents
+
 - 1 Introduction
 - 2 Background
 - 3 Model Architecture
@@ -120,11 +134,11 @@ Due to the reduced dimension of each head, the total computational cost is simil
 The Transformer uses multi-head attention in three different ways:
 
 - •
-In "encoder-decoder attention" layers, the queries come from the previous decoder layer, and the memory keys and values come from the output of the encoder. This allows every position in the decoder to attend over all positions in the input sequence. This mimics the typical encoder-decoder attention mechanisms in sequence-to-sequence models such as [38, 2, 9].
+  In "encoder-decoder attention" layers, the queries come from the previous decoder layer, and the memory keys and values come from the output of the encoder. This allows every position in the decoder to attend over all positions in the input sequence. This mimics the typical encoder-decoder attention mechanisms in sequence-to-sequence models such as [38, 2, 9].
 - •
-The encoder contains self-attention layers. In a self-attention layer all of the keys, values and queries come from the same place, in this case, the output of the previous layer in the encoder. Each position in the encoder can attend to all positions in the previous layer of the encoder.
+  The encoder contains self-attention layers. In a self-attention layer all of the keys, values and queries come from the same place, in this case, the output of the previous layer in the encoder. Each position in the encoder can attend to all positions in the previous layer of the encoder.
 - •
-Similarly, self-attention layers in the decoder allow each position in the decoder to attend to all positions in the decoder up to and including that position. We need to prevent leftward information flow in the decoder to preserve the auto-regressive property. We implement this inside of scaled dot-product attention by masking out (setting to $-\infty$) all values in the input of the softmax which correspond to illegal connections. See Figure [2](#S3.F2).
+  Similarly, self-attention layers in the decoder allow each position in the decoder to attend to all positions in the decoder up to and including that position. We need to prevent leftward information flow in the decoder to preserve the auto-regressive property. We implement this inside of scaled dot-product attention by masking out (setting to $-\infty$) all values in the input of the softmax which correspond to illegal connections. See Figure [2](#S3.F2).
 
 ### 3.3 Position-wise Feed-Forward Networks
 
@@ -162,7 +176,7 @@ The third is the path length between long-range dependencies in the network. Lea
 **Table 1: Maximum path lengths, per-layer complexity and minimum number of sequential operations for different layer types. $n$ is the sequence length, $d$ is the representation dimension, $k$ is the kernel size of convolutions and $r$ the size of the neighborhood in restricted self-attention.**
 | Layer Type | Complexity per Layer | Sequential | Maximum Path Length |
 | --- | --- | --- | --- |
-|  |  | Operations |  |
+| | | Operations | |
 | Self-Attention | $O(n^{2}\cdot d)$ | $O(1)$ | $O(1)$ |
 | Recurrent | $O(n\cdot d^{2})$ | $O(n)$ | $O(n)$ |
 | Convolutional | $O(k\cdot n\cdot d^{2})$ | $O(1)$ | $O(log_{k}(n))$ |
@@ -214,19 +228,19 @@ During training, we employed label smoothing of value $\epsilon_{ls}=0.1$ [36]. 
 ### 6.1 Machine Translation
 
 **Table 2: The Transformer achieves better BLEU scores than previous state-of-the-art models on the English-to-German and English-to-French newstest2014 tests at a fraction of the training cost.**
-| Model | BLEU |  | Training Cost (FLOPs) |  |  |
+| Model | BLEU | | Training Cost (FLOPs) | | |
 | --- | --- | --- | --- | --- | --- |
-| EN-DE | EN-FR |  | EN-DE | EN-FR |  |
-| ByteNet [18] | 23.75 |  |  |  |  |
-| Deep-Att + PosUnk [39] |  | 39.2 |  |  | $1.0\cdot 10^{20}$ |
-| GNMT + RL [38] | 24.6 | 39.92 |  | $2.3\cdot 10^{19}$ | $1.4\cdot 10^{20}$ |
-| ConvS2S [9] | 25.16 | 40.46 |  | $9.6\cdot 10^{18}$ | $1.5\cdot 10^{20}$ |
-| MoE [32] | 26.03 | 40.56 |  | $2.0\cdot 10^{19}$ | $1.2\cdot 10^{20}$ |
-| Deep-Att + PosUnk Ensemble [39] |  | 40.4 |  |  | $8.0\cdot 10^{20}$ |
-| GNMT + RL Ensemble [38] | 26.30 | 41.16 |  | $1.8\cdot 10^{20}$ | $1.1\cdot 10^{21}$ |
-| ConvS2S Ensemble [9] | 26.36 | 41.29 |  | $7.7\cdot 10^{19}$ | $1.2\cdot 10^{21}$ |
-| Transformer (base model) | 27.3 | 38.1 |  | $3.3\cdot 10^{18}$ |  |
-| Transformer (big) | 28.4 | 41.8 |  | $2.3\cdot 10^{19}$ |  |
+| EN-DE | EN-FR | | EN-DE | EN-FR | |
+| ByteNet [18] | 23.75 | | | | |
+| Deep-Att + PosUnk [39] | | 39.2 | | | $1.0\cdot 10^{20}$ |
+| GNMT + RL [38] | 24.6 | 39.92 | | $2.3\cdot 10^{19}$ | $1.4\cdot 10^{20}$ |
+| ConvS2S [9] | 25.16 | 40.46 | | $9.6\cdot 10^{18}$ | $1.5\cdot 10^{20}$ |
+| MoE [32] | 26.03 | 40.56 | | $2.0\cdot 10^{19}$ | $1.2\cdot 10^{20}$ |
+| Deep-Att + PosUnk Ensemble [39] | | 40.4 | | | $8.0\cdot 10^{20}$ |
+| GNMT + RL Ensemble [38] | 26.30 | 41.16 | | $1.8\cdot 10^{20}$ | $1.1\cdot 10^{21}$ |
+| ConvS2S Ensemble [9] | 26.36 | 41.29 | | $7.7\cdot 10^{19}$ | $1.2\cdot 10^{21}$ |
+| Transformer (base model) | 27.3 | 38.1 | | $3.3\cdot 10^{18}$ | |
+| Transformer (big) | 28.4 | 41.8 | | $2.3\cdot 10^{19}$ | |
 
 On the WMT 2014 English-to-German translation task, the big transformer model (Transformer (big) in Table [2](#S6.T2)) outperforms the best previously reported models (including ensembles) by more than $2.0$ BLEU, establishing a new state-of-the-art BLEU score of $28.4$. The configuration of this model is listed in the bottom line of Table [3](#S6.T3). Training took $3.5$ days on $8$ P100 GPUs. Even our base model surpasses all previously published models and ensembles, at a fraction of the training cost of any of the competitive models.
 
@@ -239,29 +253,29 @@ Table [2](#S6.T2) summarizes our results and compares our translation quality an
 ### 6.2 Model Variations
 
 **Table 3: Variations on the Transformer architecture. Unlisted values are identical to those of the base model. All metrics are on the English-to-German translation development set, newstest2013. Listed perplexities are per-wordpiece, according to our byte-pair encoding, and should not be compared to per-word perplexities.**
-|  | $N$ | $d_{\text{model}}$ | $d_{\text{ff}}$ | $h$ | $d_{k}$ | $d_{v}$ | $P_{drop}$ | $\epsilon_{ls}$ | train | PPL | BLEU | params |
+| | $N$ | $d_{\text{model}}$ | $d_{\text{ff}}$ | $h$ | $d_{k}$ | $d_{v}$ | $P_{drop}$ | $\epsilon_{ls}$ | train | PPL | BLEU | params |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-|  | steps | (dev) | (dev) | $\times 10^{6}$ |  |  |  |  |  |  |  |  |
+| | steps | (dev) | (dev) | $\times 10^{6}$ | | | | | | | | |
 | base | 6 | 512 | 2048 | 8 | 64 | 64 | 0.1 | 0.1 | 100K | 4.92 | 25.8 | 65 |
-| (A) |  |  |  | 1 | 512 | 512 |  |  |  | 5.29 | 24.9 |  |
-|  |  |  | 4 | 128 | 128 |  |  |  | 5.00 | 25.5 |  |  |
-|  |  |  | 16 | 32 | 32 |  |  |  | 4.91 | 25.8 |  |  |
-|  |  |  | 32 | 16 | 16 |  |  |  | 5.01 | 25.4 |  |  |
-| (B) |  |  |  |  | 16 |  |  |  |  | 5.16 | 25.1 | 58 |
-|  |  |  |  | 32 |  |  |  |  | 5.01 | 25.4 | 60 |  |
-| (C) | 2 |  |  |  |  |  |  |  |  | 6.11 | 23.7 | 36 |
-| 4 |  |  |  |  |  |  |  |  | 5.19 | 25.3 | 50 |  |
-| 8 |  |  |  |  |  |  |  |  | 4.88 | 25.5 | 80 |  |
-|  | 256 |  |  | 32 | 32 |  |  |  | 5.75 | 24.5 | 28 |  |
-|  | 1024 |  |  | 128 | 128 |  |  |  | 4.66 | 26.0 | 168 |  |
-|  |  | 1024 |  |  |  |  |  |  | 5.12 | 25.4 | 53 |  |
-|  |  | 4096 |  |  |  |  |  |  | 4.75 | 26.2 | 90 |  |
-| (D) |  |  |  |  |  |  | 0.0 |  |  | 5.77 | 24.6 |  |
-|  |  |  |  |  |  | 0.2 |  |  | 4.95 | 25.5 |  |  |
-|  |  |  |  |  |  |  | 0.0 |  | 4.67 | 25.3 |  |  |
-|  |  |  |  |  |  |  | 0.2 |  | 5.47 | 25.7 |  |  |
-| (E) |  | positional embedding instead of sinusoids |  | 4.92 | 25.7 |  |  |  |  |  |  |  |
-| big | 6 | 1024 | 4096 | 16 |  |  | 0.3 |  | 300K | 4.33 | 26.4 | 213 |
+| (A) | | | | 1 | 512 | 512 | | | | 5.29 | 24.9 | |
+| | | | 4 | 128 | 128 | | | | 5.00 | 25.5 | | |
+| | | | 16 | 32 | 32 | | | | 4.91 | 25.8 | | |
+| | | | 32 | 16 | 16 | | | | 5.01 | 25.4 | | |
+| (B) | | | | | 16 | | | | | 5.16 | 25.1 | 58 |
+| | | | | 32 | | | | | 5.01 | 25.4 | 60 | |
+| (C) | 2 | | | | | | | | | 6.11 | 23.7 | 36 |
+| 4 | | | | | | | | | 5.19 | 25.3 | 50 | |
+| 8 | | | | | | | | | 4.88 | 25.5 | 80 | |
+| | 256 | | | 32 | 32 | | | | 5.75 | 24.5 | 28 | |
+| | 1024 | | | 128 | 128 | | | | 4.66 | 26.0 | 168 | |
+| | | 1024 | | | | | | | 5.12 | 25.4 | 53 | |
+| | | 4096 | | | | | | | 4.75 | 26.2 | 90 | |
+| (D) | | | | | | | 0.0 | | | 5.77 | 24.6 | |
+| | | | | | | 0.2 | | | 4.95 | 25.5 | | |
+| | | | | | | | 0.0 | | 4.67 | 25.3 | | |
+| | | | | | | | 0.2 | | 5.47 | 25.7 | | |
+| (E) | | positional embedding instead of sinusoids | | 4.92 | 25.7 | | | | | | | |
+| big | 6 | 1024 | 4096 | 16 | | | 0.3 | | 300K | 4.33 | 26.4 | 213 |
 
 To evaluate the importance of different components of the Transformer, we varied our base model in different ways, measuring the change in performance on English-to-German translation on the development set, newstest2013. We used beam search as described in the previous section, but no checkpoint averaging. We present these results in Table [3](#S6.T3).
 
@@ -317,191 +331,193 @@ their fruitful comments, corrections and inspiration.
 ## References
 
 - [1]
-Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton.
-Layer normalization.
-arXiv preprint arXiv:1607.06450, 2016.
+  Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton.
+  Layer normalization.
+  arXiv preprint arXiv:1607.06450, 2016.
 - [2]
-Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio.
-Neural machine translation by jointly learning to align and
-translate.
-CoRR, abs/1409.0473, 2014.
+  Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio.
+  Neural machine translation by jointly learning to align and
+  translate.
+  CoRR, abs/1409.0473, 2014.
 - [3]
-Denny Britz, Anna Goldie, Minh-Thang Luong, and Quoc V. Le.
-Massive exploration of neural machine translation architectures.
-CoRR, abs/1703.03906, 2017.
+  Denny Britz, Anna Goldie, Minh-Thang Luong, and Quoc V. Le.
+  Massive exploration of neural machine translation architectures.
+  CoRR, abs/1703.03906, 2017.
 - [4]
-Jianpeng Cheng, Li Dong, and Mirella Lapata.
-Long short-term memory-networks for machine reading.
-arXiv preprint arXiv:1601.06733, 2016.
+  Jianpeng Cheng, Li Dong, and Mirella Lapata.
+  Long short-term memory-networks for machine reading.
+  arXiv preprint arXiv:1601.06733, 2016.
 - [5]
-Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Fethi Bougares, Holger
-Schwenk, and Yoshua Bengio.
-Learning phrase representations using rnn encoder-decoder for
-statistical machine translation.
-CoRR, abs/1406.1078, 2014.
+  Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Fethi Bougares, Holger
+  Schwenk, and Yoshua Bengio.
+  Learning phrase representations using rnn encoder-decoder for
+  statistical machine translation.
+  CoRR, abs/1406.1078, 2014.
 - [6]
-Francois Chollet.
-Xception: Deep learning with depthwise separable convolutions.
-arXiv preprint arXiv:1610.02357, 2016.
+  Francois Chollet.
+  Xception: Deep learning with depthwise separable convolutions.
+  arXiv preprint arXiv:1610.02357, 2016.
 - [7]
-Junyoung Chung, Çaglar Gülçehre, Kyunghyun Cho, and Yoshua
-Bengio.
-Empirical evaluation of gated recurrent neural networks on sequence
-modeling.
-CoRR, abs/1412.3555, 2014.
+  Junyoung Chung, Çaglar Gülçehre, Kyunghyun Cho, and Yoshua
+  Bengio.
+  Empirical evaluation of gated recurrent neural networks on sequence
+  modeling.
+  CoRR, abs/1412.3555, 2014.
 - [8]
-Chris Dyer, Adhiguna Kuncoro, Miguel Ballesteros, and Noah A. Smith.
-Recurrent neural network grammars.
-In Proc. of NAACL, 2016.
+  Chris Dyer, Adhiguna Kuncoro, Miguel Ballesteros, and Noah A. Smith.
+  Recurrent neural network grammars.
+  In Proc. of NAACL, 2016.
 - [9]
-Jonas Gehring, Michael Auli, David Grangier, Denis Yarats, and Yann N. Dauphin.
-Convolutional sequence to sequence learning.
-arXiv preprint arXiv:1705.03122v2, 2017.
+  Jonas Gehring, Michael Auli, David Grangier, Denis Yarats, and Yann N. Dauphin.
+  Convolutional sequence to sequence learning.
+  arXiv preprint arXiv:1705.03122v2, 2017.
 - [10]
-Alex Graves.
-Generating sequences with recurrent neural networks.
-arXiv preprint arXiv:1308.0850, 2013.
+  Alex Graves.
+  Generating sequences with recurrent neural networks.
+  arXiv preprint arXiv:1308.0850, 2013.
 - [11]
-Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.
-Deep residual learning for image recognition.
-In Proceedings of the IEEE Conference on Computer Vision and
-Pattern Recognition, pages 770–778, 2016.
+  Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.
+  Deep residual learning for image recognition.
+  In Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition, pages 770–778, 2016.
 - [12]
-Sepp Hochreiter, Yoshua Bengio, Paolo Frasconi, and Jürgen Schmidhuber.
-Gradient flow in recurrent nets: the difficulty of learning long-term
-dependencies, 2001.
+  Sepp Hochreiter, Yoshua Bengio, Paolo Frasconi, and Jürgen Schmidhuber.
+  Gradient flow in recurrent nets: the difficulty of learning long-term
+  dependencies, 2001.
 - [13]
-Sepp Hochreiter and Jürgen Schmidhuber.
-Long short-term memory.
-Neural computation, 9(8):1735–1780, 1997.
+  Sepp Hochreiter and Jürgen Schmidhuber.
+  Long short-term memory.
+  Neural computation, 9(8):1735–1780, 1997.
 - [14]
-Zhongqiang Huang and Mary Harper.
-Self-training PCFG grammars with latent annotations across
-languages.
-In Proceedings of the 2009 Conference on Empirical Methods in
-Natural Language Processing, pages 832–841. ACL, August 2009.
+  Zhongqiang Huang and Mary Harper.
+  Self-training PCFG grammars with latent annotations across
+  languages.
+  In Proceedings of the 2009 Conference on Empirical Methods in
+  Natural Language Processing, pages 832–841. ACL, August 2009.
 - [15]
-Rafal Jozefowicz, Oriol Vinyals, Mike Schuster, Noam Shazeer, and Yonghui Wu.
-Exploring the limits of language modeling.
-arXiv preprint arXiv:1602.02410, 2016.
+  Rafal Jozefowicz, Oriol Vinyals, Mike Schuster, Noam Shazeer, and Yonghui Wu.
+  Exploring the limits of language modeling.
+  arXiv preprint arXiv:1602.02410, 2016.
 - [16]
-Łukasz Kaiser and Samy Bengio.
-Can active memory replace attention?
-In Advances in Neural Information Processing Systems, (NIPS),
+  Łukasz Kaiser and Samy Bengio.
+  Can active memory replace attention?
+  In Advances in Neural Information Processing Systems, (NIPS),
+
 2016.
+
 - [17]
-Łukasz Kaiser and Ilya Sutskever.
-Neural GPUs learn algorithms.
-In International Conference on Learning Representations
-(ICLR), 2016.
+  Łukasz Kaiser and Ilya Sutskever.
+  Neural GPUs learn algorithms.
+  In International Conference on Learning Representations
+  (ICLR), 2016.
 - [18]
-Nal Kalchbrenner, Lasse Espeholt, Karen Simonyan, Aaron van den Oord, Alex
-Graves, and Koray Kavukcuoglu.
-Neural machine translation in linear time.
-arXiv preprint arXiv:1610.10099v2, 2017.
+  Nal Kalchbrenner, Lasse Espeholt, Karen Simonyan, Aaron van den Oord, Alex
+  Graves, and Koray Kavukcuoglu.
+  Neural machine translation in linear time.
+  arXiv preprint arXiv:1610.10099v2, 2017.
 - [19]
-Yoon Kim, Carl Denton, Luong Hoang, and Alexander M. Rush.
-Structured attention networks.
-In International Conference on Learning Representations, 2017.
+  Yoon Kim, Carl Denton, Luong Hoang, and Alexander M. Rush.
+  Structured attention networks.
+  In International Conference on Learning Representations, 2017.
 - [20]
-Diederik Kingma and Jimmy Ba.
-Adam: A method for stochastic optimization.
-In ICLR, 2015.
+  Diederik Kingma and Jimmy Ba.
+  Adam: A method for stochastic optimization.
+  In ICLR, 2015.
 - [21]
-Oleksii Kuchaiev and Boris Ginsburg.
-Factorization tricks for LSTM networks.
-arXiv preprint arXiv:1703.10722, 2017.
+  Oleksii Kuchaiev and Boris Ginsburg.
+  Factorization tricks for LSTM networks.
+  arXiv preprint arXiv:1703.10722, 2017.
 - [22]
-Zhouhan Lin, Minwei Feng, Cicero Nogueira dos Santos, Mo Yu, Bing Xiang, Bowen
-Zhou, and Yoshua Bengio.
-A structured self-attentive sentence embedding.
-arXiv preprint arXiv:1703.03130, 2017.
+  Zhouhan Lin, Minwei Feng, Cicero Nogueira dos Santos, Mo Yu, Bing Xiang, Bowen
+  Zhou, and Yoshua Bengio.
+  A structured self-attentive sentence embedding.
+  arXiv preprint arXiv:1703.03130, 2017.
 - [23]
-Minh-Thang Luong, Quoc V. Le, Ilya Sutskever, Oriol Vinyals, and Lukasz Kaiser.
-Multi-task sequence to sequence learning.
-arXiv preprint arXiv:1511.06114, 2015.
+  Minh-Thang Luong, Quoc V. Le, Ilya Sutskever, Oriol Vinyals, and Lukasz Kaiser.
+  Multi-task sequence to sequence learning.
+  arXiv preprint arXiv:1511.06114, 2015.
 - [24]
-Minh-Thang Luong, Hieu Pham, and Christopher D Manning.
-Effective approaches to attention-based neural machine translation.
-arXiv preprint arXiv:1508.04025, 2015.
+  Minh-Thang Luong, Hieu Pham, and Christopher D Manning.
+  Effective approaches to attention-based neural machine translation.
+  arXiv preprint arXiv:1508.04025, 2015.
 - [25]
-Mitchell P Marcus, Mary Ann Marcinkiewicz, and Beatrice Santorini.
-Building a large annotated corpus of english: The penn treebank.
-Computational linguistics, 19(2):313–330, 1993.
+  Mitchell P Marcus, Mary Ann Marcinkiewicz, and Beatrice Santorini.
+  Building a large annotated corpus of english: The penn treebank.
+  Computational linguistics, 19(2):313–330, 1993.
 - [26]
-David McClosky, Eugene Charniak, and Mark Johnson.
-Effective self-training for parsing.
-In Proceedings of the Human Language Technology Conference of
-the NAACL, Main Conference, pages 152–159. ACL, June 2006.
+  David McClosky, Eugene Charniak, and Mark Johnson.
+  Effective self-training for parsing.
+  In Proceedings of the Human Language Technology Conference of
+  the NAACL, Main Conference, pages 152–159. ACL, June 2006.
 - [27]
-Ankur Parikh, Oscar Täckström, Dipanjan Das, and Jakob Uszkoreit.
-A decomposable attention model.
-In Empirical Methods in Natural Language Processing, 2016.
+  Ankur Parikh, Oscar Täckström, Dipanjan Das, and Jakob Uszkoreit.
+  A decomposable attention model.
+  In Empirical Methods in Natural Language Processing, 2016.
 - [28]
-Romain Paulus, Caiming Xiong, and Richard Socher.
-A deep reinforced model for abstractive summarization.
-arXiv preprint arXiv:1705.04304, 2017.
+  Romain Paulus, Caiming Xiong, and Richard Socher.
+  A deep reinforced model for abstractive summarization.
+  arXiv preprint arXiv:1705.04304, 2017.
 - [29]
-Slav Petrov, Leon Barrett, Romain Thibaux, and Dan Klein.
-Learning accurate, compact, and interpretable tree annotation.
-In Proceedings of the 21st International Conference on
-Computational Linguistics and 44th Annual Meeting of the ACL, pages
-433–440. ACL, July 2006.
+  Slav Petrov, Leon Barrett, Romain Thibaux, and Dan Klein.
+  Learning accurate, compact, and interpretable tree annotation.
+  In Proceedings of the 21st International Conference on
+  Computational Linguistics and 44th Annual Meeting of the ACL, pages
+  433–440. ACL, July 2006.
 - [30]
-Ofir Press and Lior Wolf.
-Using the output embedding to improve language models.
-arXiv preprint arXiv:1608.05859, 2016.
+  Ofir Press and Lior Wolf.
+  Using the output embedding to improve language models.
+  arXiv preprint arXiv:1608.05859, 2016.
 - [31]
-Rico Sennrich, Barry Haddow, and Alexandra Birch.
-Neural machine translation of rare words with subword units.
-arXiv preprint arXiv:1508.07909, 2015.
+  Rico Sennrich, Barry Haddow, and Alexandra Birch.
+  Neural machine translation of rare words with subword units.
+  arXiv preprint arXiv:1508.07909, 2015.
 - [32]
-Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le,
-Geoffrey Hinton, and Jeff Dean.
-Outrageously large neural networks: The sparsely-gated
-mixture-of-experts layer.
-arXiv preprint arXiv:1701.06538, 2017.
+  Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le,
+  Geoffrey Hinton, and Jeff Dean.
+  Outrageously large neural networks: The sparsely-gated
+  mixture-of-experts layer.
+  arXiv preprint arXiv:1701.06538, 2017.
 - [33]
-Nitish Srivastava, Geoffrey E Hinton, Alex Krizhevsky, Ilya Sutskever, and
-Ruslan Salakhutdinov.
-Dropout: a simple way to prevent neural networks from overfitting.
-Journal of Machine Learning Research, 15(1):1929–1958, 2014.
+  Nitish Srivastava, Geoffrey E Hinton, Alex Krizhevsky, Ilya Sutskever, and
+  Ruslan Salakhutdinov.
+  Dropout: a simple way to prevent neural networks from overfitting.
+  Journal of Machine Learning Research, 15(1):1929–1958, 2014.
 - [34]
-Sainbayar Sukhbaatar, Arthur Szlam, Jason Weston, and Rob Fergus.
-End-to-end memory networks.
-In C. Cortes, N. D. Lawrence, D. D. Lee, M. Sugiyama, and R. Garnett,
-editors, Advances in Neural Information Processing Systems 28, pages
-2440–2448. Curran Associates, Inc., 2015.
+  Sainbayar Sukhbaatar, Arthur Szlam, Jason Weston, and Rob Fergus.
+  End-to-end memory networks.
+  In C. Cortes, N. D. Lawrence, D. D. Lee, M. Sugiyama, and R. Garnett,
+  editors, Advances in Neural Information Processing Systems 28, pages
+  2440–2448. Curran Associates, Inc., 2015.
 - [35]
-Ilya Sutskever, Oriol Vinyals, and Quoc VV Le.
-Sequence to sequence learning with neural networks.
-In Advances in Neural Information Processing Systems, pages
-3104–3112, 2014.
+  Ilya Sutskever, Oriol Vinyals, and Quoc VV Le.
+  Sequence to sequence learning with neural networks.
+  In Advances in Neural Information Processing Systems, pages
+  3104–3112, 2014.
 - [36]
-Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, and
-Zbigniew Wojna.
-Rethinking the inception architecture for computer vision.
-CoRR, abs/1512.00567, 2015.
+  Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, and
+  Zbigniew Wojna.
+  Rethinking the inception architecture for computer vision.
+  CoRR, abs/1512.00567, 2015.
 - [37]
-Vinyals & Kaiser, Koo, Petrov, Sutskever, and Hinton.
-Grammar as a foreign language.
-In Advances in Neural Information Processing Systems, 2015.
+  Vinyals & Kaiser, Koo, Petrov, Sutskever, and Hinton.
+  Grammar as a foreign language.
+  In Advances in Neural Information Processing Systems, 2015.
 - [38]
-Yonghui Wu, Mike Schuster, Zhifeng Chen, Quoc V Le, Mohammad Norouzi, Wolfgang
-Macherey, Maxim Krikun, Yuan Cao, Qin Gao, Klaus Macherey, et al.
-Google’s neural machine translation system: Bridging the gap between
-human and machine translation.
-arXiv preprint arXiv:1609.08144, 2016.
+  Yonghui Wu, Mike Schuster, Zhifeng Chen, Quoc V Le, Mohammad Norouzi, Wolfgang
+  Macherey, Maxim Krikun, Yuan Cao, Qin Gao, Klaus Macherey, et al.
+  Google’s neural machine translation system: Bridging the gap between
+  human and machine translation.
+  arXiv preprint arXiv:1609.08144, 2016.
 - [39]
-Jie Zhou, Ying Cao, Xuguang Wang, Peng Li, and Wei Xu.
-Deep recurrent models with fast-forward connections for neural
-machine translation.
-CoRR, abs/1606.04199, 2016.
+  Jie Zhou, Ying Cao, Xuguang Wang, Peng Li, and Wei Xu.
+  Deep recurrent models with fast-forward connections for neural
+  machine translation.
+  CoRR, abs/1606.04199, 2016.
 - [40]
-Muhua Zhu, Yue Zhang, Wenliang Chen, Min Zhang, and Jingbo Zhu.
-Fast and accurate shift-reduce constituent parsing.
-In Proceedings of the 51st Annual Meeting of the ACL (Volume 1:
-Long Papers), pages 434–443. ACL, August 2013.
+  Muhua Zhu, Yue Zhang, Wenliang Chen, Min Zhang, and Jingbo Zhu.
+  Fast and accurate shift-reduce constituent parsing.
+  In Proceedings of the 51st Annual Meeting of the ACL (Volume 1:
+  Long Papers), pages 434–443. ACL, August 2013.
 
 ## Attention Visualizations
 
