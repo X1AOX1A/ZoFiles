@@ -960,58 +960,66 @@ export class Exporter {
   async rebaseIndex(oldRoot: string, newRoot: string): Promise<number> {
     // Try loading the index from the new location first (user may have
     // already moved the directory, so .zofiles-index.json is there).
-    let indexPath = joinPath(newRoot, ".zofiles-index.json")
-    let exists = await IOUtils.exists(indexPath)
+    let indexPath = joinPath(newRoot, ".zofiles-index.json");
+    let exists = await IOUtils.exists(indexPath);
 
     if (!exists) {
       // Maybe the index hasn't been moved — try old location
-      indexPath = joinPath(oldRoot, ".zofiles-index.json")
-      exists = await IOUtils.exists(indexPath)
+      indexPath = joinPath(oldRoot, ".zofiles-index.json");
+      exists = await IOUtils.exists(indexPath);
       if (!exists) {
-        ztoolkit.log("[ZoFiles] rebaseIndex: no index found at old or new root")
-        return -1
+        ztoolkit.log(
+          "[ZoFiles] rebaseIndex: no index found at old or new root",
+        );
+        return -1;
       }
       // Copy the index file to the new root
-      const newIndexPath = joinPath(newRoot, ".zofiles-index.json")
-      await ensureDir(newRoot)
-      await IOUtils.copy(indexPath, newIndexPath)
-      indexPath = newIndexPath
+      const newIndexPath = joinPath(newRoot, ".zofiles-index.json");
+      await ensureDir(newRoot);
+      await IOUtils.copy(indexPath, newIndexPath);
+      indexPath = newIndexPath;
     }
 
     // Invalidate cache and load from the new location
-    this.indexCache = null
-    const index = await this.loadIndex(newRoot)
+    this.indexCache = null;
+    const index = await this.loadIndex(newRoot);
 
     // Normalise trailing separators for reliable prefix replacement
-    const oldPrefix = oldRoot.replace(/[/\\]+$/, "")
-    const newPrefix = newRoot.replace(/[/\\]+$/, "")
+    const oldPrefix = oldRoot.replace(/[/\\]+$/, "");
+    const newPrefix = newRoot.replace(/[/\\]+$/, "");
 
-    let updated = 0
+    let updated = 0;
     for (const entry of Object.values(index.entries)) {
-      const rewritten: string[] = []
-      let changed = false
+      const rewritten: string[] = [];
+      let changed = false;
       for (const p of entry.exportedPaths) {
-        if (p === oldPrefix || p.startsWith(oldPrefix + "/") || p.startsWith(oldPrefix + "\\")) {
-          rewritten.push(newPrefix + p.slice(oldPrefix.length))
-          changed = true
+        if (
+          p === oldPrefix ||
+          p.startsWith(oldPrefix + "/") ||
+          p.startsWith(oldPrefix + "\\")
+        ) {
+          rewritten.push(newPrefix + p.slice(oldPrefix.length));
+          changed = true;
         } else {
-          rewritten.push(p)
+          rewritten.push(p);
         }
       }
       if (changed) {
-        entry.exportedPaths = rewritten
-        updated++
+        entry.exportedPaths = rewritten;
+        updated++;
       }
     }
 
     if (updated > 0) {
-      await this.saveIndex(newRoot)
-      ztoolkit.log(`[ZoFiles] rebaseIndex: updated ${updated} entries from ${oldPrefix} → ${newPrefix}`)
+      await this.saveIndex(newRoot);
+      ztoolkit.log(
+        `[ZoFiles] rebaseIndex: updated ${updated} entries from ${oldPrefix} → ${newPrefix}`,
+      );
     } else {
-      ztoolkit.log("[ZoFiles] rebaseIndex: no entries needed updating")
+      ztoolkit.log("[ZoFiles] rebaseIndex: no entries needed updating");
     }
 
-    return updated
+    return updated;
   }
 }
 
