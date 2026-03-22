@@ -111,8 +111,8 @@ async function buildNode(
     children,
     itemIds,
     allItemIds,
-    // Needs "Allin" subdir when there are both items and subcollections
-    needsAllin: children.length > 0 && itemIds.length > 0,
+    // Needs "Allin" subdir when there are subcollections (aggregates all descendant papers)
+    needsAllin: children.length > 0 && allItemIds.length > 0,
   };
 }
 
