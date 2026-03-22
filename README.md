@@ -73,7 +73,7 @@ To back up: go to **Zotero → Settings → Advanced → Files and Folders** to 
 ### From Source
 
 ```bash
-git clone https://github.com/your-username/ZoFiles.git
+git clone https://github.com/X1AOX1A/ZoFiles.git
 cd ZoFiles
 npm install
 npm run build
@@ -185,7 +185,7 @@ Default: `{arxivId} - {title}`
 ### Setup
 
 ```bash
-git clone https://github.com/your-username/ZoFiles.git
+git clone https://github.com/X1AOX1A/ZoFiles.git
 cd ZoFiles
 npm install
 cp .env.example .env
