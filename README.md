@@ -268,6 +268,19 @@ A: Only if you enable "Link back to Zotero", which creates linked file attachmen
 **Q: What if arxiv2md.org is down?**
 A: The Markdown provider will fail gracefully for affected papers. Other content (PDF, BibTeX, notes) will still be exported. Cached content is unaffected.
 
+## Claude Code Skill
+
+ZoFiles includes a [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/skills) at `.claude/skills/read-paper/` that teaches Claude how to efficiently read exported paper folders.
+
+When the skill is active, Claude will:
+- Know the library directory structure and default path
+- Read `paper.md` selectively (frontmatter + ToC first, then specific sections on demand)
+- Always copy `paper.bib` verbatim for citations — never hallucinate BibTeX
+- Use `kimi.md` as a quick overview when appropriate
+- Find papers by arXiv ID, browse by topic, and work with user notes
+
+The skill activates automatically when you ask Claude to read, summarize, cite, or compare papers from your ZoFiles library.
+
 ## Credits
 
 - Built with [zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template) by windingwind
