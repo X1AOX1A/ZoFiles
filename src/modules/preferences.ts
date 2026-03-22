@@ -75,11 +75,51 @@ function bindBrowseButton(doc: Document): void {
     PREF_ID("export-root"),
   ) as HTMLInputElement | null;
 
+  // Helper: handle export root change with index rebase prompt
+  const handleExportRootChange = async (newPath: string) => {
+    const oldPath = (getPref("exportRoot") as string) || ""
+    if (!newPath || newPath === oldPath) {
+      setPref("exportRoot", newPath)
+      return
+    }
+    setPref("exportRoot", newPath)
+
+    // If there was a previous export root, offer to rebase the index
+    if (oldPath) {
+      const win = doc.ownerGlobal as Window
+      const msg = getString("pref-rebase-confirm")
+        .replace("{old}", oldPath)
+        .replace("{new}", newPath)
+      const doRebase = win.confirm(msg)
+
+      if (doRebase) {
+        try {
+          const exporter = getExporter()
+          const updated = await exporter.rebaseIndex(oldPath, newPath)
+          if (updated > 0) {
+            win.alert(
+              getString("pref-rebase-success").replace("{count}", String(updated)),
+            )
+          } else if (updated === 0) {
+            win.alert(getString("pref-rebase-no-change"))
+          } else {
+            win.alert(getString("pref-rebase-no-index"))
+          }
+        } catch (err: any) {
+          ztoolkit.log(`[ZoFiles] rebaseIndex failed: ${err.message}`)
+          win.alert(
+            getString("pref-rebase-error").replace("{error}", err.message || String(err)),
+          )
+        }
+      }
+    }
+  }
+
   // Save manually typed path on change/blur
   if (input) {
     const saveInput = () => {
       const val = input.value.trim();
-      setPref("exportRoot", val);
+      handleExportRootChange(val)
     };
     input.addEventListener("change", saveInput);
     input.addEventListener("blur", saveInput);
@@ -133,10 +173,10 @@ function bindBrowseButton(doc: Document): void {
       });
 
       if (path) {
-        setPref("exportRoot", path);
         if (input) {
           input.value = path;
         }
+        await handleExportRootChange(path)
       }
     } catch (err: any) {
       // Fallback: prompt for manual input
@@ -149,10 +189,10 @@ function bindBrowseButton(doc: Document): void {
         (getPref("exportRoot") as string) || "",
       );
       if (result !== null && result.trim()) {
-        setPref("exportRoot", result.trim());
         if (input) {
           input.value = result.trim();
         }
+        await handleExportRootChange(result.trim())
       }
     }
   });
@@ -198,7 +238,13 @@ async function initCollectionTree(doc: Document): Promise<void> {
     renderCollectionNode(doc, container, col, enabledIds, enableAll, 0);
   }
 
-  // Add "select all / deselect all" controls
+  // Remove old controls (if refreshing)
+  const oldControls = (container.parentNode as Element)?.querySelector(
+    ".zofiles-collection-controls",
+  );
+  if (oldControls) oldControls.remove();
+
+  // Add "select all / deselect all / refresh" controls
   const controls = doc.createElementNS(
     "http://www.w3.org/1999/xhtml",
     "html:div",
@@ -224,8 +270,19 @@ async function initCollectionTree(doc: Document): Promise<void> {
     toggleAllCollections(doc, false);
   });
 
+  const refreshBtn = doc.createElementNS(
+    "http://www.w3.org/1999/xhtml",
+    "html:button",
+  ) as HTMLButtonElement;
+  refreshBtn.textContent = getString("pref-refresh-tree");
+  refreshBtn.style.marginLeft = "8px";
+  refreshBtn.addEventListener("click", () => {
+    initCollectionTree(doc);
+  });
+
   controls.appendChild(selectAllBtn);
   controls.appendChild(deselectAllBtn);
+  controls.appendChild(refreshBtn);
 
   // Insert controls before the tree
   container.parentNode?.insertBefore(controls, container);
