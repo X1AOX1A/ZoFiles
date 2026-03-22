@@ -16,10 +16,12 @@ export interface CollectionNode {
   children: CollectionNode[];
   /** IDs of items directly in this collection (non-recursive) */
   itemIds: number[];
+  /** IDs of items in this collection AND all descendant collections */
+  allItemIds: number[];
   /**
    * True when this collection has both direct items AND subcollections.
-   * Items should be placed in an "Allin" subdirectory to separate them
-   * from subcollection directories.
+   * When true, an "Allin" subdirectory is created containing all papers
+   * from this collection and every descendant collection.
    */
   needsAllin: boolean;
 }
@@ -93,12 +95,22 @@ async function buildNode(
   // Get direct child item IDs (non-recursive — passing true returns IDs only)
   const itemIds = collection.getChildItems(true) as number[];
 
+  // Collect all item IDs from this collection + all descendants
+  const descendantIds = new Set<number>(itemIds);
+  for (const child of children) {
+    for (const id of child.allItemIds) {
+      descendantIds.add(id);
+    }
+  }
+  const allItemIds = Array.from(descendantIds);
+
   return {
     id: collection.id,
     name: collection.name,
     fsName: sanitizeFilename(collection.name),
     children,
     itemIds,
+    allItemIds,
     // Needs "Allin" subdir when there are both items and subcollections
     needsAllin: children.length > 0 && itemIds.length > 0,
   };
@@ -154,13 +166,14 @@ function walkTree(
   for (const node of nodes) {
     const nodePath = joinPath(basePath, node.fsName);
 
-    if (node.itemIds.includes(itemId)) {
-      // If this collection has both subcollections and direct items,
-      // place items in an "Allin" subdirectory
-      const targetDir = node.needsAllin
-        ? joinPath(nodePath, "Allin")
-        : nodePath;
-      paths.push(targetDir);
+    if (node.needsAllin) {
+      // "Allin" contains ALL items (this collection + all descendants)
+      if (node.allItemIds.includes(itemId)) {
+        paths.push(joinPath(nodePath, "Allin"));
+      }
+    } else if (node.itemIds.includes(itemId)) {
+      // Leaf collection (no subcollections) — items go directly here
+      paths.push(nodePath);
     }
 
     // Continue walking into children

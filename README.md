@@ -57,14 +57,18 @@ ZoFiles ships with a [Claude Code skill](https://docs.anthropic.com/en/docs/clau
 │   │   │       └── My Notes.md
 │   │   └── 2311.10702 - Another Paper/
 │   │       └── ...
-│   └── Allin/                   # papers directly in "Machine Learning"
-│       └── 2301.12345 - Some Paper/
+│   └── Allin/                   # ALL papers (this collection + all sub-collections)
+│       ├── 2301.12345 - Some Paper/
+│       │   └── ...
+│       ├── 1706.03762 - Attention Is All You Need/
+│       │   └── ...
+│       └── 2311.10702 - Another Paper/
 │           └── ...
 └── Computer Vision/
     └── ...
 ```
 
-> When a collection has both sub-collections and direct papers, the direct papers are placed in an `Allin/` subdirectory to avoid mixing files and folders.
+> When a collection has both sub-collections and direct papers, an `Allin/` subdirectory is created containing **all papers from this collection and every descendant collection** — a flat view of the entire subtree.
 
 ## ⚠️ Backup Your Data
 
