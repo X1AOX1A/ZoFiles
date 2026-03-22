@@ -4,29 +4,44 @@
 [![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template)
 [![license](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
-**Export Zotero papers to organized filesystem folders** with per-paper content: PDF, full-text Markdown, BibTeX, Kimi AI review, and notes.
+**Connect Claude (or other AI agents) to your Zotero library.**
 
-ZoFiles mirrors your Zotero collection hierarchy as real directories on disk, creating a browsable, editor-friendly paper library that stays in sync with Zotero.
+ZoFiles turns your Zotero library into an agent-readable filesystem — mirroring your collection hierarchy as real directories, with per-paper folders containing Markdown, BibTeX, AI reviews, and more. Paired with a built-in [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/skills), it lets Claude read, summarize, cite, and compare your papers directly.
 
 ## Features
 
+### File Management — Zotero to Filesystem
+
 - **Collection mirroring** — Zotero's collection tree becomes a real directory tree
-- **Per-paper folders** — Each paper gets its own folder with all related files
+- **Per-paper folders** — Each paper gets its own folder named `{arxivId} - {title}`
 - **Auto-sync** — Event-driven: add, modify, move, or delete a paper in Zotero, and the export updates automatically
-- **arXiv-focused** — Papers are identified by arXiv ID (extracted from archiveID, DOI, URL, or extra field)
-- **Rich content export**:
+- **Rich content per paper**:
   - `paper.pdf` — Symlink or copy of the PDF attachment
-  - `paper.md` — Full-text Markdown via [arxiv2md.org](https://arxiv2md.org) API
+  - `paper.md` — Full-text Markdown via [arxiv2md.org](https://arxiv2md.org)
   - `kimi.md` — AI-generated review from [papers.cool](https://papers.cool) (Kimi)
   - `paper.bib` — BibTeX citation from arXiv
   - `arxiv.id` — Plain text arXiv identifier
   - `notes/*.md` — Zotero notes converted to Markdown
 - **Link back to Zotero** — Optionally create linked attachments in Zotero pointing to exported files
-- **Configurable** — Choose export root, folder naming format, which content to export, and which collections to include
+- **Configurable** — Choose export root, folder naming, content toggles, and collection filters
 
 ![ZoFiles exported file structure in Finder](docs/screenshot.png)
 
 > See a real exported paper folder: [`docs/example/`](docs/example/1706.03762%20-%20Attention%20Is%20All%20You%20Need/) — *Attention Is All You Need* with PDF, Markdown, BibTeX, Kimi review, and notes.
+
+### Skills — AI-Powered Paper Reading
+
+ZoFiles ships with a [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/skills) (`.claude/skills/read-paper/`) that teaches Claude how to work with your exported library:
+
+- **Read papers selectively** — Frontmatter + table of contents first, then specific sections on demand
+- **Cite accurately** — Always copies `paper.bib` verbatim; never hallucinates BibTeX
+- **Summarize & compare** — Uses `paper.md` for deep reading, `kimi.md` for quick overviews
+- **Browse your library** — Find papers by arXiv ID, explore collections by topic, read your notes
+- **Works automatically** — The skill activates whenever you ask Claude to read, summarize, cite, or compare papers
+
+![Claude Code reading papers with ZoFiles skill](docs/skill-demo.png)
+
+> The skill works with any folder structure matching the ZoFiles format — you don't need to mention "ZoFiles" in your prompts.
 
 ## Exported File Structure
 
@@ -134,9 +149,15 @@ A progress window will appear in the bottom-right corner showing the current ite
 - **Link Back** — Enable to create linked attachments in Zotero pointing to exported files
 - **Auto Sync** — Enabled by default; ZoFiles will automatically update exports when you add, modify, move, or delete papers
 
-## Configuration Reference
+### Step 7 (Optional): Set Up the Claude Code Skill
 
-After installation, go to **Zotero → Settings → ZoFiles** to configure:
+The read-paper skill works out of the box if you use Claude Code within a ZoFiles-exported directory. To set it up globally:
+
+1. Open `.claude/skills/read-paper/SKILL.md`
+2. Fill in your ZoFiles export root path in the `Paper Library Location` section
+3. Start asking Claude to read, summarize, or cite your papers
+
+## Configuration Reference
 
 | Setting | Description | Default |
 |---|---|---|
@@ -167,7 +188,7 @@ Default: `{arxivId} - {title}`
 3. **Collection tree mapping** — Builds the filesystem directory tree from Zotero's collection hierarchy
 4. **Content providers** — Runs each enabled content provider (PDF, Markdown, BibTeX, etc.) to populate the paper folder
 5. **Caching** — Downloaded content (Markdown, BibTeX, Kimi) is cached to avoid redundant API calls
-6. **Index tracking** — Maintains `.zofiles-index.json` for efficient deletion and folder management
+6. **Index tracking** — Maintains `.zofiles-index.json` for efficient incremental updates and cleanup
 
 ### API Rate Limits
 
@@ -240,6 +261,10 @@ ZoFiles/
 │           ├── bibtex-provider.ts
 │           ├── notes-provider.ts
 │           └── arxivid-provider.ts
+├── .claude/
+│   └── skills/
+│       └── read-paper/             # Claude Code skill for paper reading
+│           └── SKILL.md
 ├── package.json
 ├── tsconfig.json
 └── zotero-plugin.config.ts
@@ -268,18 +293,8 @@ A: Only if you enable "Link back to Zotero", which creates linked file attachmen
 **Q: What if arxiv2md.org is down?**
 A: The Markdown provider will fail gracefully for affected papers. Other content (PDF, BibTeX, notes) will still be exported. Cached content is unaffected.
 
-## Claude Code Skill
-
-ZoFiles includes a [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/skills) at `.claude/skills/read-paper/` that teaches Claude how to efficiently read exported paper folders.
-
-When the skill is active, Claude will:
-- Know the library directory structure and default path
-- Read `paper.md` selectively (frontmatter + ToC first, then specific sections on demand)
-- Always copy `paper.bib` verbatim for citations — never hallucinate BibTeX
-- Use `kimi.md` as a quick overview when appropriate
-- Find papers by arXiv ID, browse by topic, and work with user notes
-
-The skill activates automatically when you ask Claude to read, summarize, cite, or compare papers from your ZoFiles library.
+**Q: Does the Claude Code skill work with other AI agents?**
+A: The exported file structure is plain Markdown and BibTeX — any AI agent that can read files can work with it. The bundled skill is specifically designed for Claude Code, but the format is agent-agnostic.
 
 ## Credits
 
