@@ -1,0 +1,3 @@
+startup-begin = ZoFiles: 初始化中...
+startup-finish = ZoFiles: 就绪
+prefs-title = ZoFiles

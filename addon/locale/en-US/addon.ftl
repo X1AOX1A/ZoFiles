@@ -1,0 +1,3 @@
+startup-begin = ZoFiles: Initializing...
+startup-finish = ZoFiles: Ready
+prefs-title = ZoFiles

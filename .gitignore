@@ -1,0 +1,8 @@
+node_modules/
+.scaffold/
+*.xpi
+.env
+.env.*
+.vscode/
+.idea/
+*.log

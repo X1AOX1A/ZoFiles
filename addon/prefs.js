@@ -1,0 +1,13 @@
+pref("exportRoot", "");
+pref("cachePath", "");
+pref("paperFolderFormat", "{arxivId} - {title}");
+pref("enabledCollections", "[]");
+pref("exportPdf", true);
+pref("exportMarkdown", true);
+pref("exportKimi", true);
+pref("exportBibtex", true);
+pref("exportNotes", true);
+pref("exportArxivId", true);
+pref("pdfMode", "symlink");
+pref("linkBackToZotero", false);
+pref("autoSync", true);

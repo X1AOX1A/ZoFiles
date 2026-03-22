@@ -1,0 +1,222 @@
+<linkset>
+  <html:link rel="localization" href="__addonRef__-preferences.ftl" />
+</linkset>
+
+<groupbox
+  onload="Zotero.__addonInstance__.hooks.onPrefsEvent('load', { window })"
+>
+  <!-- ================================================================== -->
+  <!-- Title                                                              -->
+  <!-- ================================================================== -->
+  <label><html:h2 data-l10n-id="pref-title"></html:h2></label>
+
+  <!-- ================================================================== -->
+  <!-- Section 1: Export Settings                                         -->
+  <!-- ================================================================== -->
+  <html:fieldset>
+    <html:legend data-l10n-id="pref-section-export"></html:legend>
+
+    <!-- Export Root Directory -->
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-export-root"
+        data-l10n-id="pref-export-root"
+        style="min-width: 120px"
+      ></html:label>
+      <html:input
+        type="text"
+        id="zotero-prefpane-__addonRef__-export-root"
+        style="flex: 1; margin: 0 8px"
+        placeholder="/path/to/your/papers"
+      />
+      <button
+        id="zotero-prefpane-__addonRef__-browse"
+        data-l10n-id="pref-browse"
+      />
+    </hbox>
+
+    <!-- Paper Folder Format -->
+    <hbox align="center" style="margin-top: 8px">
+      <html:label
+        data-l10n-id="pref-folder-format"
+        style="min-width: 120px"
+      ></html:label>
+      <menulist id="zotero-prefpane-__addonRef__-folder-format">
+        <menupopup>
+          <menuitem
+            label="{arxivId} - {title}"
+            value="{arxivId} - {title}"
+          />
+          <menuitem label="{arxivId}" value="{arxivId}" />
+          <menuitem label="{title}" value="{title}" />
+          <menuitem
+            label="{firstAuthor} - {title}"
+            value="{firstAuthor} - {title}"
+          />
+          <menuitem label="{year} - {title}" value="{year} - {title}" />
+          <menuitem data-l10n-id="pref-folder-format-custom" value="custom" />
+        </menupopup>
+      </menulist>
+    </hbox>
+
+    <!-- Custom folder format input (hidden by default) -->
+    <hbox align="center" style="margin-top: 4px">
+      <html:label style="min-width: 120px"></html:label>
+      <html:input
+        type="text"
+        id="zotero-prefpane-__addonRef__-folder-format-custom"
+        style="flex: 1; display: none"
+        placeholder="{arxivId} - {title}"
+      />
+    </hbox>
+
+    <!-- Collection Selection -->
+    <vbox style="margin-top: 12px">
+      <html:label
+        data-l10n-id="pref-collections"
+        style="font-weight: bold; margin-bottom: 4px"
+      ></html:label>
+      <html:div
+        data-l10n-id="pref-collections-hint"
+        style="font-size: 0.9em; color: #666; margin-bottom: 6px"
+      ></html:div>
+      <html:div
+        id="zotero-prefpane-__addonRef__-collection-tree"
+        style="
+          max-height: 250px;
+          overflow-y: auto;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          padding: 6px;
+          background: var(--material-background);
+        "
+      ></html:div>
+    </vbox>
+  </html:fieldset>
+
+  <!-- ================================================================== -->
+  <!-- Section 2: Content Providers                                       -->
+  <!-- ================================================================== -->
+  <html:fieldset style="margin-top: 12px">
+    <html:legend data-l10n-id="pref-section-content"></html:legend>
+
+    <vbox>
+      <checkbox
+        id="zotero-prefpane-__addonRef__-export-pdf"
+        data-l10n-id="pref-export-pdf"
+        preference="exportPdf"
+      />
+      <checkbox
+        id="zotero-prefpane-__addonRef__-export-markdown"
+        data-l10n-id="pref-export-markdown"
+        preference="exportMarkdown"
+      />
+      <checkbox
+        id="zotero-prefpane-__addonRef__-export-kimi"
+        data-l10n-id="pref-export-kimi"
+        preference="exportKimi"
+      />
+      <checkbox
+        id="zotero-prefpane-__addonRef__-export-bibtex"
+        data-l10n-id="pref-export-bibtex"
+        preference="exportBibtex"
+      />
+      <checkbox
+        id="zotero-prefpane-__addonRef__-export-notes"
+        data-l10n-id="pref-export-notes"
+        preference="exportNotes"
+      />
+      <checkbox
+        id="zotero-prefpane-__addonRef__-export-arxivid"
+        data-l10n-id="pref-export-arxivid"
+        preference="exportArxivId"
+      />
+    </vbox>
+  </html:fieldset>
+
+  <!-- ================================================================== -->
+  <!-- Section 3: PDF Mode                                                -->
+  <!-- ================================================================== -->
+  <html:fieldset style="margin-top: 12px">
+    <html:legend data-l10n-id="pref-section-pdf-mode"></html:legend>
+
+    <radiogroup id="zotero-prefpane-__addonRef__-pdf-mode">
+      <radio
+        data-l10n-id="pref-pdf-symlink"
+        value="symlink"
+        selected="true"
+      />
+      <radio data-l10n-id="pref-pdf-copy" value="copy" />
+    </radiogroup>
+  </html:fieldset>
+
+  <!-- ================================================================== -->
+  <!-- Section 4: Advanced                                                -->
+  <!-- ================================================================== -->
+  <html:fieldset style="margin-top: 12px">
+    <html:legend data-l10n-id="pref-section-advanced"></html:legend>
+
+    <!-- Cache Path -->
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-cache-path"
+        data-l10n-id="pref-cache-path"
+        style="min-width: 120px"
+      ></html:label>
+      <html:input
+        type="text"
+        id="zotero-prefpane-__addonRef__-cache-path"
+        style="flex: 1"
+        placeholder="~/.cache/ZoFiles"
+      />
+    </hbox>
+
+    <!-- Link Back to Zotero -->
+    <checkbox
+      id="zotero-prefpane-__addonRef__-link-back"
+      data-l10n-id="pref-link-back"
+      preference="linkBackToZotero"
+      style="margin-top: 8px"
+    />
+
+    <!-- Auto Sync -->
+    <checkbox
+      id="zotero-prefpane-__addonRef__-auto-sync"
+      data-l10n-id="pref-auto-sync"
+      preference="autoSync"
+      style="margin-top: 4px"
+    />
+  </html:fieldset>
+
+  <!-- ================================================================== -->
+  <!-- Section 5: Actions                                                 -->
+  <!-- ================================================================== -->
+  <html:fieldset style="margin-top: 12px">
+    <html:legend data-l10n-id="pref-section-actions"></html:legend>
+
+    <hbox align="center">
+      <button
+        id="zotero-prefpane-__addonRef__-rebuild"
+        data-l10n-id="pref-rebuild"
+      />
+      <button
+        id="zotero-prefpane-__addonRef__-force-rebuild"
+        data-l10n-id="pref-force-rebuild"
+        style="margin-left: 8px"
+      />
+      <html:span
+        id="zotero-prefpane-__addonRef__-rebuild-status"
+        style="margin-left: 12px; font-size: 0.9em"
+      ></html:span>
+    </hbox>
+  </html:fieldset>
+</groupbox>
+
+<!-- Build info footer -->
+<vbox style="margin-top: 8px">
+  <html:label
+    data-l10n-id="pref-help"
+    data-l10n-args='{"time": "__buildTime__", "name": "__addonName__", "version": "__buildVersion__"}'
+    style="font-size: 0.85em; color: #999"
+  ></html:label>
+</vbox>
