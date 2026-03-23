@@ -191,6 +191,6 @@ git push --tags        # CI builds, creates GitHub Release, uploads .xpi
 
 ## Before Committing
 
-1. **Run `npx prettier --write .`** — CI enforces Prettier; commits with formatting issues will fail.
+1. **Run `npx prettier --write .`** — CI enforces Prettier; commits with formatting issues will fail. This includes **all** files in the repo — `.claude/skills/` Markdown/Python files are also checked.
 2. **Check if docs need updating** — if you changed preferences, added features, or modified the public API, update `README.md` and/or this `CLAUDE.md` accordingly.
 3. **Run `npm run build`** — ensure the build and type-check pass (`tsc --noEmit`).

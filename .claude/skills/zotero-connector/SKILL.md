@@ -71,6 +71,7 @@ python .claude/skills/zotero-connector/scripts/import_arxiv.py --zofiles-index /
 ### Supported Input Formats
 
 The script accepts arXiv IDs in any of these formats:
+
 - `2301.07041` — new-style ID
 - `2301.07041v2` — with version (version stripped for dedup)
 - `hep-th/0601001` — old-style ID
@@ -98,6 +99,7 @@ The script accepts arXiv IDs in any of these formats:
 ## When to Use This Skill
 
 Use when the user says things like:
+
 - "Import this arXiv paper: 2301.07041"
 - "Add these papers to Zotero"
 - "Batch import arXiv papers"

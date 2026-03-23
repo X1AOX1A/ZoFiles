@@ -24,8 +24,10 @@ import json
 import os
 import pathlib
 import platform
+import random
 import re
 import sqlite3
+import string
 import sys
 import textwrap
 import threading
@@ -49,6 +51,7 @@ ARXIV_BATCH_SIZE = 20
 ARXIV_RATE_LIMIT = 3.0  # seconds between requests
 IMPORT_DELAY = 1.0  # seconds between connector calls
 MAX_PARALLEL = 5
+PDF_DOWNLOAD_TIMEOUT = 60  # seconds for downloading PDF from arXiv
 
 # Atom XML namespaces
 NS = {
@@ -594,10 +597,21 @@ class ZoteroConnector:
             return None
 
     def save_item(self, paper: ArxivPaper, collection_key: Optional[str] = None) -> bool:
-        """Import a paper via /connector/saveItems. Returns True on success."""
-        item = self._build_item(paper, collection_key)
+        """Import a paper via /connector/saveItems + /connector/saveAttachment.
+
+        This is a two-step process matching what the browser Connector does:
+        1. POST /connector/saveItems — saves metadata only (attachments ignored)
+        2. Download PDF from arXiv, then POST /connector/saveAttachment — streams
+           the PDF binary to Zotero, linking it to the parent item via session.
+        """
+        # Generate unique session & item IDs (matches Zotero.Utilities.randomString())
+        session_id = self._random_string(32)
+        connector_item_id = self._random_string(32)
+
+        item = self._build_item(paper, collection_key, session_id, connector_item_id)
         payload = json.dumps(item).encode("utf-8")
 
+        # Step 1: Save metadata
         try:
             req = urllib.request.Request(
                 f"{self.base_url}/connector/saveItems",
@@ -606,7 +620,9 @@ class ZoteroConnector:
             )
             req.add_header("Content-Type", "application/json")
             with urllib.request.urlopen(req, timeout=30) as resp:
-                return resp.status == 200 or resp.status == 201
+                if resp.status not in (200, 201):
+                    paper.error = f"saveItems returned {resp.status}"
+                    return False
         except urllib.error.HTTPError as e:
             paper.error = f"Connector HTTP {e.code}: {e.reason}"
             return False
@@ -614,7 +630,86 @@ class ZoteroConnector:
             paper.error = f"Connector error: {e}"
             return False
 
-    def _build_item(self, paper: ArxivPaper, collection_key: Optional[str] = None) -> dict:
+        # Step 2: Download PDF from arXiv and push to Zotero
+        pdf_url = f"https://arxiv.org/pdf/{paper.arxiv_id}"
+        try:
+            pdf_data = self._download_pdf(pdf_url)
+        except Exception as e:
+            # Metadata saved successfully but PDF download failed — not fatal
+            paper.error = f"PDF download failed (metadata saved): {e}"
+            return True  # item was created, just missing PDF
+
+        if pdf_data:
+            try:
+                self._save_attachment(
+                    session_id=session_id,
+                    parent_item_id=connector_item_id,
+                    title="arXiv Full Text PDF",
+                    url=pdf_url,
+                    content_type="application/pdf",
+                    data=pdf_data,
+                )
+            except Exception as e:
+                # Metadata saved but attachment upload failed — not fatal
+                paper.error = f"PDF upload failed (metadata saved): {e}"
+
+        return True
+
+    @staticmethod
+    def _random_string(length: int = 32) -> str:
+        """Generate a random alphanumeric string (matches Zotero.Utilities.randomString)."""
+        chars = string.ascii_letters + string.digits
+        return "".join(random.choices(chars, k=length))
+
+    def _download_pdf(self, url: str) -> Optional[bytes]:
+        """Download PDF from a URL. Returns bytes or None on failure."""
+        req = urllib.request.Request(url)
+        req.add_header("User-Agent", "Mozilla/5.0 (Zotero)")
+        with urllib.request.urlopen(req, timeout=PDF_DOWNLOAD_TIMEOUT) as resp:
+            if resp.status != 200:
+                return None
+            return resp.read()
+
+    def _save_attachment(
+        self,
+        session_id: str,
+        parent_item_id: str,
+        title: str,
+        url: str,
+        content_type: str,
+        data: bytes,
+    ) -> bool:
+        """Push attachment binary to Zotero via /connector/saveAttachment.
+
+        Metadata is passed in the X-Metadata header (JSON). The request body
+        is the raw file bytes. This mirrors how the browser Connector works.
+        """
+        metadata = json.dumps({
+            "sessionID": session_id,
+            "parentItemID": parent_item_id,
+            "title": title,
+            "url": url,
+        })
+
+        req = urllib.request.Request(
+            f"{self.base_url}/connector/saveAttachment",
+            data=data,
+            method="POST",
+        )
+        req.add_header("Content-Type", content_type)
+        req.add_header("Content-Length", str(len(data)))
+        req.add_header("X-Metadata", metadata)
+
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            return resp.status in (200, 201)
+
+    def _build_item(
+        self,
+        paper: ArxivPaper,
+        collection_key: Optional[str] = None,
+        session_id: Optional[str] = None,
+        connector_item_id: Optional[str] = None,
+    ) -> dict:
         """Construct Zotero-compatible item JSON."""
         # Determine item type
         item_type = "preprint"
@@ -654,7 +749,9 @@ class ZoteroConnector:
         # Build tags from categories
         tags = [{"tag": cat} for cat in paper.categories]
 
-        # Build attachments
+        # Build attachments — kept in payload for compatibility, but Zotero's
+        # saveItems uses ATTACHMENT_MODE_IGNORE so these won't be downloaded.
+        # The actual PDF is pushed separately via /connector/saveAttachment.
         attachments = [
             {
                 "title": "arXiv Full Text PDF",
@@ -667,8 +764,10 @@ class ZoteroConnector:
         collections = [collection_key] if collection_key else []
 
         item = {
+            "sessionID": session_id or self._random_string(32),
             "items": [
                 {
+                    "id": connector_item_id or self._random_string(32),
                     "itemType": item_type,
                     "title": paper.title or f"arXiv:{paper.arxiv_id}",
                     "creators": creators,
