@@ -1,0 +1,66 @@
+[
+  {
+    "query": "Read the paper 2512.18832",
+    "should_trigger": true
+  },
+  {
+    "query": "Summarize the papers in Agent/WorldModel/",
+    "should_trigger": true
+  },
+  {
+    "query": "Compare 2301.04104 and 2305.14078",
+    "should_trigger": true
+  },
+  {
+    "query": "Give me the BibTeX for Attention Is All You Need",
+    "should_trigger": true
+  },
+  {
+    "query": "What did I note about the transformer paper?",
+    "should_trigger": true
+  },
+  {
+    "query": "更新目录",
+    "should_trigger": true
+  },
+  {
+    "query": "Update paper library directory structure",
+    "should_trigger": true
+  },
+  {
+    "query": "What papers do I have about reinforcement learning?",
+    "should_trigger": true
+  },
+  {
+    "query": "Read kimi.md from the RLHF paper",
+    "should_trigger": true
+  },
+  {
+    "query": "What's the arXiv ID for the GPT-4 paper?",
+    "should_trigger": true
+  },
+  {
+    "query": "Cite these three papers in my essay: 2301.07041, 2310.06825, 1706.03762",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a research paper about large language models",
+    "should_trigger": false
+  },
+  {
+    "query": "Help me draft a literature review section",
+    "should_trigger": false
+  },
+  {
+    "query": "What's the best format for an academic paper?",
+    "should_trigger": false
+  },
+  {
+    "query": "Read the file at /tmp/report.pdf and summarize it",
+    "should_trigger": false
+  },
+  {
+    "query": "How do I install Zotero?",
+    "should_trigger": false
+  }
+]

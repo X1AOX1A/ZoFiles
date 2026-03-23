@@ -35,6 +35,8 @@ filesystem (IOUtils / PathUtils)
 1. **Notifier** (`notifier.ts`) listens to `item`, `collection`, `collection-item` events
 2. **Exporter** (`exporter.ts`) orchestrates: resolves paths via tree-builder, runs providers, manages index
 3. **Tree Builder** (`tree-builder.ts`) maps Zotero collection hierarchy → filesystem directory tree
+   - Each `CollectionNode` has `itemIds` (direct items) and `allItemIds` (direct + all descendant items)
+   - **`Allin/` directory**: created when a collection has subcollections and `allItemIds.length > 0`. Contains **every paper from the collection and all its descendants** — a flat view of the entire subtree. This means even if the parent collection has no direct items, `Allin/` is still created as long as subcollections have papers.
 4. **Content Providers** (`content-providers/*.ts`) generate individual files (PDF, Markdown, etc.)
 5. **Index** (`.zofiles-index.json`) tracks exported items, paths, and files for incremental operations
 
@@ -167,7 +169,15 @@ These are Mozilla platform APIs available in Zotero's privileged context. No `im
 ```bash
 npm run build          # production build → .scaffold/build/zo-files.xpi
 npm start              # dev mode with hot reload in Zotero
-gh release create vX.Y.Z .scaffold/build/zo-files.xpi --title "ZoFiles vX.Y.Z"
+```
+
+### Release via CI
+
+Do **not** use `gh release create` manually — it conflicts with the Release workflow.
+
+```bash
+git tag v0.X.Y
+git push --tags        # CI builds, creates GitHub Release, uploads .xpi
 ```
 
 ## Code Style

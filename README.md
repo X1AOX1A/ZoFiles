@@ -8,38 +8,33 @@
 
 ZoFiles turns your Zotero library into an agent-readable filesystem — mirroring your collection hierarchy as real directories, with per-paper folders containing Markdown, BibTeX, AI reviews, and more. Paired with a built-in [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/skills), it lets Claude read, summarize, cite, and compare your papers directly.
 
+## Quick Start
+
+**Requirements:** Zotero 7+ &bull; macOS / Linux (symlink mode) or Windows (copy mode) &bull; Papers with arXiv IDs
+
+1. **Install** — Download the latest `.xpi` from [Releases](../../releases). In Zotero: **Tools > Add-ons > gear icon > Install Add-on From File**. Restart Zotero.
+2. **Configure** — Go to **Zotero > Settings > ZoFiles**. Set your **Export Root** directory and choose which collections/content to export.
+3. **Export** — Click **Rebuild** at the bottom of the settings panel. Your paper tree will appear in the export root.
+
+After the initial export, ZoFiles auto-syncs — any add, modify, move, or delete in Zotero updates the export automatically.
+
 ## Features
 
-### File Management — Zotero to Filesystem
-
 - **Collection mirroring** — Zotero's collection tree becomes a real directory tree
-- **Per-paper folders** — Each paper gets its own folder named `{arxivId} - {title}`
-- **Auto-sync** — Event-driven: add, modify, move, or delete a paper in Zotero, and the export updates automatically
-- **Rich content per paper**:
+- **Per-paper folders** — Each paper gets its own folder (default: `{arxivId} - {title}`)
+- **Auto-sync** — Event-driven export on any library change
+- **Rich content per paper:**
   - `paper.pdf` — Symlink or copy of the PDF attachment
   - `paper.md` — Full-text Markdown via [arxiv2md.org](https://arxiv2md.org)
-  - `kimi.md` — AI-generated review from [papers.cool](https://papers.cool) (Kimi)
+  - `kimi.md` — AI-generated review from [papers.cool](https://papers.cool)
   - `paper.bib` — BibTeX citation from arXiv
   - `arxiv.id` — Plain text arXiv identifier
   - `notes/*.md` — Zotero notes converted to Markdown
-- **Link back to Zotero** — Optionally create linked attachments in Zotero pointing to exported files
-- **Configurable** — Choose export root, folder naming, content toggles, and collection filters
+- **Link back** — Optionally create linked attachments in Zotero pointing to exported files
 
 ![ZoFiles exported file structure in Finder](docs/screenshot.png)
 
 > See a real exported paper folder: [`docs/example/`](docs/example/1706.03762%20-%20Attention%20Is%20All%20You%20Need/) — _Attention Is All You Need_ with PDF, Markdown, BibTeX, Kimi review, and notes.
-
-### Skills — AI-Powered Paper Reading
-
-ZoFiles ships with a [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/skills) (`.claude/skills/read-paper/`) that teaches Claude how to work with your exported library:
-
-- **Read papers selectively** — Frontmatter + table of contents first, then specific sections on demand
-- **Cite accurately** — Always copies `paper.bib` verbatim; never hallucinates BibTeX
-- **Summarize & compare** — Uses `paper.md` for deep reading, `kimi.md` for quick overviews
-- **Browse your library** — Find papers by arXiv ID, explore collections by topic, read your notes
-- **Works automatically** — The skill activates whenever you ask Claude to read, summarize, cite, or compare papers
-
-![Claude Code reading papers with ZoFiles skill](docs/skill-demo.png)
 
 ## Exported File Structure
 
@@ -57,123 +52,78 @@ ZoFiles ships with a [Claude Code skill](https://docs.anthropic.com/en/docs/clau
 │   │   │       └── My Notes.md
 │   │   └── 2311.10702 - Another Paper/
 │   │       └── ...
-│   └── Allin/                   # ALL papers (this collection + all sub-collections)
-│       ├── 2301.12345 - Some Paper/
-│       │   └── ...
-│       ├── 1706.03762 - Attention Is All You Need/
-│       │   └── ...
-│       └── 2311.10702 - Another Paper/
-│           └── ...
+│   └── Allin/                   # flat view: ALL papers from this + descendant collections
+│       └── ...
 └── Computer Vision/
     └── ...
 ```
 
-> When a collection has both sub-collections and direct papers, an `Allin/` subdirectory is created containing **all papers from this collection and every descendant collection** — a flat view of the entire subtree.
+## Claude Code Skills
 
-## ⚠️ Backup Your Data
+ZoFiles ships with two [Claude Code skills](https://docs.anthropic.com/en/docs/claude-code/skills) (in `.claude/skills/`) that activate automatically when you talk to Claude about papers.
 
-ZoFiles is designed to be **read-only** with respect to your Zotero library — it only reads items and collections to build the export tree. However, **we strongly recommend backing up your Zotero data directory before first use**, just in case.
+![Claude Code reading papers with ZoFiles skill](docs/skill-demo.png)
 
-To back up: go to **Zotero → Settings → Advanced → Files and Folders** to find your data directory, then copy the entire folder to a safe location.
+### `read-paper` — Read, Summarize & Cite
 
-> **Disclaimer:** ZoFiles is provided as-is, without warranty of any kind. The authors are not responsible for any data loss or corruption that may occur. Use at your own risk.
+First-time setup:
 
-## Installation
-
-### From Release (Recommended)
-
-1. Download the latest `.xpi` file from [Releases](../../releases)
-2. In Zotero: Tools → Add-ons → gear icon → Install Add-on From File
-3. Select the downloaded `.xpi` file
-4. Restart Zotero
-
-### From Source
-
-```bash
-git clone https://github.com/X1AOX1A/ZoFiles.git
-cd ZoFiles
-npm install
-npm run build
+```
+> My ZoFiles library is at /Users/me/Papers/
+> Update paper library directory structure
 ```
 
-The built `.xpi` will be in `.scaffold/build/`.
+Then just ask:
 
-## Getting Started
+```
+> Read the paper 2512.18832
+> Summarize the papers in Agent/WorldModel/
+> Compare 2301.04104 and 2305.14078
+> Give me the BibTeX for Attention Is All You Need
+```
 
-After installing the plugin, a welcome dialog will appear on first launch guiding you through setup. You can also configure everything manually:
+### `zotero-connector` — Import arXiv Papers
 
-### Step 1: Open Settings
+Requires Zotero running locally and Python 3.8+.
 
-Go to **Zotero → Settings** (or press `⌘,` on macOS). You'll see **ZoFiles** in the left sidebar. Click it.
+```
+> Import paper 2301.07041 into Zotero
+> Batch import 2301.07041 2310.06825 1706.03762
+> Import 2301.07041 into my "LLM Papers" collection
+```
 
-### Step 2: Set Export Root Directory
+Accepts any arXiv ID format: `2301.07041`, `2301.07041v2`, `https://arxiv.org/abs/2301.07041`, `arXiv:2301.07041`.
 
-This is the most important setting — the folder where ZoFiles will create your paper tree.
+## Configuration
 
-- Click **Browse** to open a Finder/file picker and select a directory
-- Or type/paste the full path directly into the text field (e.g. `/Users/you/Papers`)
+All settings are in **Zotero > Settings > ZoFiles**.
 
-### Step 3: Choose Collections
+| Setting       | Description                                | Default               |
+| ------------- | ------------------------------------------ | --------------------- |
+| Export Root   | Directory where the paper tree is created  | _(must be set)_       |
+| Folder Format | Paper folder naming template               | `{arxivId} - {title}` |
+| PDF Mode      | Symlink (saves space) or Copy (standalone) | Symlink               |
+| Collections   | Choose which collections to export         | All                   |
+| Auto Sync     | Auto-export on library changes             | On                    |
+| Link Back     | Create linked attachments in Zotero        | Off                   |
+| Cache Path    | Cache for downloaded content               | `~/.cache/ZoFiles`    |
 
-By default, all collections are exported. Uncheck any collections you want to exclude. The item count for each collection is shown in parentheses.
+<details>
+<summary><strong>Content toggles</strong></summary>
 
-### Step 4: Configure Content
+| Content        | Description                           | Default |
+| -------------- | ------------------------------------- | ------- |
+| PDF            | Symlink or copy of the PDF attachment | On      |
+| Paper Markdown | Full-text conversion via arxiv2md.org | On      |
+| Kimi Review    | AI-generated summary from papers.cool | On      |
+| BibTeX         | Citation data from arXiv              | On      |
+| Zotero Notes   | Your notes, converted to Markdown     | On      |
+| arXiv ID file  | Plain text arXiv identifier           | On      |
 
-Choose which files to generate for each paper:
+</details>
 
-| Content            | Description                               | Default |
-| ------------------ | ----------------------------------------- | ------- |
-| **PDF**            | Symlink or copy of the PDF attachment     | ✅ On   |
-| **Paper Markdown** | Full-text conversion via arxiv2md.org     | ✅ On   |
-| **Kimi Review**    | AI-generated summary from papers.cool     | ✅ On   |
-| **BibTeX**         | Citation data from arXiv                  | ✅ On   |
-| **Zotero Notes**   | Your notes, converted to Markdown         | ✅ On   |
-| **arXiv ID file**  | Plain text file with the arXiv identifier | ✅ On   |
-
-> **Note:** Kimi Review requires a network request per paper. Some papers may not have a review available yet — the provider will fail gracefully for those.
-
-### Step 5: Run Initial Export
-
-Click **Rebuild** at the bottom of the settings panel. ZoFiles will scan all your selected collections, extract arXiv IDs, and create the folder tree with all enabled content.
-
-A progress window will appear in the bottom-right corner showing the current item being processed. After completion, check your export root directory — you should see the full collection tree with per-paper folders.
-
-> **Rebuild vs Force Full Rebuild:**
->
-> - **Rebuild** (default) — Incremental. Only exports new or changed items and removes stale ones. Fast when most items are already exported.
-> - **Force Full Rebuild** — Deletes the entire export directory and re-exports everything from scratch. Use this if the export gets into a broken state.
->
-> Both modes benefit from the download cache (`~/.cache/ZoFiles/`). Network content (Markdown, Kimi, BibTeX) is cached on first download and reused on subsequent rebuilds, so even a Force Full Rebuild is faster the second time around.
-
-### Step 6 (Optional): Fine-tune
-
-- **Folder Format** — Change how paper folders are named (default: `{arxivId} - {title}`)
-- **PDF Mode** — Switch between Symlink (saves disk space) and Copy (standalone)
-- **Link Back** — Enable to create linked attachments in Zotero pointing to exported files
-- **Auto Sync** — Enabled by default; ZoFiles will automatically update exports when you add, modify, move, or delete papers
-
-### Step 7 (Optional): Set Up the Claude Code Skill
-
-The read-paper skill works out of the box if you use Claude Code within a ZoFiles-exported directory. To set it up globally:
-
-1. Open `.claude/skills/read-paper/SKILL.md`
-2. Fill in your ZoFiles export root path in the `Paper Library Location` section
-3. Start asking Claude to read, summarize, or cite your papers
-
-## Configuration Reference
-
-| Setting        | Description                               | Default               |
-| -------------- | ----------------------------------------- | --------------------- |
-| Export Root    | Directory where the paper tree is created | _(must be set)_       |
-| Folder Format  | Paper folder naming template              | `{arxivId} - {title}` |
-| PDF Mode       | Symlink (saves space) or Copy             | Symlink               |
-| Export Content | Toggle each content type on/off           | All on                |
-| Collections    | Choose which collections to export        | All                   |
-| Auto Sync      | Automatically export on changes           | On                    |
-| Link Back      | Create linked attachments in Zotero       | Off                   |
-| Cache Path     | Cache directory for downloaded content    | `~/.cache/ZoFiles`    |
-
-### Folder Format Tokens
+<details>
+<summary><strong>Folder format tokens</strong></summary>
 
 | Token           | Example                     |
 | --------------- | --------------------------- |
@@ -182,29 +132,54 @@ The read-paper skill works out of the box if you use Claude Code within a ZoFile
 | `{firstAuthor}` | `Vaswani`                   |
 | `{year}`        | `2017`                      |
 
-Default: `{arxivId} - {title}`
+</details>
 
-## How It Works
+<details>
+<summary><strong>Rebuild modes</strong></summary>
 
-1. **Event listener** — ZoFiles registers a `Zotero.Notifier` observer for item, collection, and collection-item events
-2. **arXiv ID extraction** — For each paper, extracts the arXiv ID from multiple fields (archiveID → DOI → URL → extra)
-3. **Collection tree mapping** — Builds the filesystem directory tree from Zotero's collection hierarchy
-4. **Content providers** — Runs each enabled content provider (PDF, Markdown, BibTeX, etc.) to populate the paper folder
-5. **Caching** — Downloaded content (Markdown, BibTeX, Kimi) is cached to avoid redundant API calls
-6. **Index tracking** — Maintains `.zofiles-index.json` for efficient incremental updates and cleanup
+- **Rebuild** (default) — Incremental. Only exports new/changed items and removes stale ones. Fast when most items are already exported.
+- **Force Full Rebuild** — Deletes the entire export directory and re-exports everything from scratch. Use if the export gets into a broken state.
 
-### API Rate Limits
+Both modes benefit from the download cache (`~/.cache/ZoFiles/`). Network content is cached on first download, so even a full rebuild is fast the second time.
 
-- **arxiv2md.org**: 30 requests/minute (built-in rate limiter)
-- **papers.cool** (Kimi): No strict limit, but responses can be slow (~2-5s)
-- **arxiv.org** (BibTeX): Standard rate limits apply
+</details>
 
-## Development
+## Backup Your Data
+
+ZoFiles is **read-only** with respect to your Zotero library (unless you enable "Link back"). We still recommend **backing up your Zotero data directory before first use** — find it at **Zotero > Settings > Advanced > Files and Folders**.
+
+> **Disclaimer:** ZoFiles is provided as-is, without warranty. The authors are not responsible for any data loss. Use at your own risk.
+
+<details>
+<summary><strong>FAQ</strong></summary>
+
+**Q: What happens to papers without arXiv IDs?**
+A: They are silently skipped. ZoFiles only exports papers with valid arXiv identifiers.
+
+**Q: Can I use this on Windows?**
+A: Yes, but set PDF mode to "Copy". Symlinks on Windows require elevated permissions.
+
+**Q: How do I trigger a full re-export?**
+A: Settings > ZoFiles > "Rebuild" (incremental) or "Force Full Rebuild" (clean start).
+
+**Q: Does this modify my Zotero library?**
+A: Only if you enable "Link back to Zotero". Otherwise, ZoFiles is read-only.
+
+**Q: What if arxiv2md.org is down?**
+A: Markdown export fails gracefully. Other content (PDF, BibTeX, notes) still exports. Cached content is unaffected.
+
+**Q: Does the Claude Code skill work with other AI agents?**
+A: The exported format is plain Markdown and BibTeX — any agent that can read files can use it. The bundled skill is designed for Claude Code, but the file structure is agent-agnostic.
+
+</details>
+
+<details>
+<summary><strong>Development</strong></summary>
 
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (LTS)
-- [Zotero 7](https://www.zotero.org/support/beta_builds) (beta)
+- [Zotero 7](https://www.zotero.org/support/beta_builds)
 
 ### Setup
 
@@ -212,25 +187,15 @@ Default: `{arxivId} - {title}`
 git clone https://github.com/X1AOX1A/ZoFiles.git
 cd ZoFiles
 npm install
-cp .env.example .env
-# Edit .env with your Zotero path
+cp .env.example .env    # edit with your Zotero path
 ```
 
-### Development Mode
+### Dev Mode & Build
 
 ```bash
-npm start
+npm start              # dev server with hot reload
+npm run build          # production .xpi → .scaffold/build/
 ```
-
-This starts the dev server with hot reload — edit code and the plugin auto-reloads in Zotero.
-
-### Build
-
-```bash
-npm run build
-```
-
-Outputs a production `.xpi` in `.scaffold/build/`.
 
 ### Project Structure
 
@@ -245,59 +210,37 @@ ZoFiles/
 │       └── preferences.xhtml       # Settings panel UI
 ├── src/                            # TypeScript source
 │   ├── index.ts                    # Entry point
-│   ├── addon.ts                    # Plugin singleton
 │   ├── hooks.ts                    # Lifecycle hooks
 │   └── modules/
 │       ├── notifier.ts             # Zotero event listener
 │       ├── exporter.ts             # Export orchestrator + queue
 │       ├── tree-builder.ts         # Collection → directory mapping
 │       ├── arxiv-id.ts             # arXiv ID extraction
-│       ├── html-to-md.ts           # HTML → Markdown converter
 │       ├── preferences.ts          # Settings panel logic
 │       ├── utils.ts                # Filesystem utilities
 │       └── content-providers/      # Pluggable content generators
-│           ├── provider.ts         # Base interface
-│           ├── registry.ts         # Provider registry
-│           ├── pdf-provider.ts
-│           ├── markdown-provider.ts
-│           ├── kimi-provider.ts
-│           ├── bibtex-provider.ts
-│           ├── notes-provider.ts
-│           └── arxivid-provider.ts
-├── .claude/
-│   └── skills/
-│       └── read-paper/             # Claude Code skill for paper reading
-│           └── SKILL.md
-├── package.json
-├── tsconfig.json
-└── zotero-plugin.config.ts
+├── .claude/skills/                 # Claude Code skills
+│   ├── read-paper/
+│   └── zotero-connector/
+└── package.json
 ```
 
-## Requirements
+### How It Works
 
-- **Zotero 7 or 8** (version 7.0+)
-- **macOS or Linux** (symlink mode requires Unix-like OS; copy mode works everywhere)
-- Papers must have extractable **arXiv IDs** — papers without arXiv IDs are skipped
+1. **Event listener** — Registers a `Zotero.Notifier` observer for item, collection, and collection-item events
+2. **arXiv ID extraction** — Extracts arXiv ID from multiple fields (archiveID > DOI > URL > extra)
+3. **Collection tree mapping** — Builds the filesystem tree from Zotero's collection hierarchy
+4. **Content providers** — Runs each enabled provider (PDF, Markdown, BibTeX, etc.) to populate paper folders
+5. **Caching** — Downloaded content is cached to `~/.cache/ZoFiles/` to avoid redundant API calls
+6. **Index tracking** — `.zofiles-index.json` enables efficient incremental updates
 
-## FAQ
+### API Rate Limits
 
-**Q: What happens to papers without arXiv IDs?**
-A: They are silently skipped. ZoFiles only exports papers with valid arXiv identifiers.
+- **arxiv2md.org**: 30 requests/minute (built-in rate limiter)
+- **papers.cool** (Kimi): No strict limit, responses ~2-5s
+- **arxiv.org** (BibTeX): Standard rate limits apply
 
-**Q: Can I use this on Windows?**
-A: Yes, but set PDF mode to "Copy" instead of "Symlink". Symlinks on Windows require elevated permissions.
-
-**Q: How do I trigger a full re-export?**
-A: Go to Settings → ZoFiles. Click "Rebuild" for an incremental sync (fast), or "Force Full Rebuild" to start clean.
-
-**Q: Does this modify my Zotero library?**
-A: Only if you enable "Link back to Zotero", which creates linked file attachments. Otherwise, ZoFiles is read-only with respect to your library.
-
-**Q: What if arxiv2md.org is down?**
-A: The Markdown provider will fail gracefully for affected papers. Other content (PDF, BibTeX, notes) will still be exported. Cached content is unaffected.
-
-**Q: Does the Claude Code skill work with other AI agents?**
-A: The exported file structure is plain Markdown and BibTeX — any AI agent that can read files can work with it. The bundled skill is specifically designed for Claude Code, but the format is agent-agnostic.
+</details>
 
 ## Credits
 

@@ -1,0 +1,174 @@
+{
+  "skill_name": "read-paper",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Read the paper 2512.18832",
+      "should_trigger": true,
+      "expected_output": "Reads paper.md from the matching paper folder",
+      "expectations": [
+        "Searches for a folder matching *2512.18832*",
+        "Reads paper.md or at least the frontmatter",
+        "Provides a summary or content from the paper"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Summarize the papers in Agent/WorldModel/",
+      "should_trigger": true,
+      "expected_output": "Lists and summarizes papers in the specified collection directory",
+      "expectations": [
+        "Navigates to the Agent/WorldModel/ directory in the library",
+        "Reads paper.md from multiple paper folders",
+        "Provides summaries of the papers found"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Compare 2301.04104 and 2305.14078",
+      "should_trigger": true,
+      "expected_output": "Reads both papers and provides a comparison",
+      "expectations": [
+        "Finds both paper folders by arXiv ID",
+        "Reads key sections from both papers",
+        "Produces a structured comparison"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Give me the BibTeX for Attention Is All You Need",
+      "should_trigger": true,
+      "expected_output": "Reads and returns paper.bib verbatim",
+      "expectations": [
+        "Finds the paper folder matching 'Attention Is All You Need'",
+        "Reads paper.bib from that folder",
+        "Returns the BibTeX entry without modification"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "What did I note about the transformer paper?",
+      "should_trigger": true,
+      "expected_output": "Reads the notes/ directory for the matching paper",
+      "expectations": [
+        "Finds the paper folder for the transformer paper",
+        "Reads files in the notes/ subdirectory",
+        "Summarizes the user's notes"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "更新目录",
+      "should_trigger": true,
+      "expected_output": "Runs scan-library.sh and updates the directory snapshot in SKILL.md",
+      "expectations": [
+        "Runs the scan-library.sh script",
+        "Updates the AUTO-GENERATED section in SKILL.md"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Update paper library directory structure",
+      "should_trigger": true,
+      "expected_output": "Runs scan-library.sh and updates the directory snapshot",
+      "expectations": [
+        "Runs the scan-library.sh script",
+        "Updates the directory snapshot in SKILL.md"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "What papers do I have about reinforcement learning?",
+      "should_trigger": true,
+      "expected_output": "Searches library for RL-related papers and lists them",
+      "expectations": [
+        "Uses the library snapshot or searches collection directories",
+        "Identifies papers related to reinforcement learning",
+        "Lists the found papers with brief descriptions"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Read kimi.md from the RLHF paper",
+      "should_trigger": true,
+      "expected_output": "Finds the RLHF paper and reads its kimi.md file",
+      "expectations": [
+        "Locates the paper folder matching 'RLHF'",
+        "Reads the kimi.md file",
+        "Presents the AI review content"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "What's the arXiv ID for the GPT-4 paper?",
+      "should_trigger": true,
+      "expected_output": "Reads arxiv.id from the matching paper folder",
+      "expectations": [
+        "Finds the paper folder for GPT-4",
+        "Reads the arxiv.id file",
+        "Returns the arXiv identifier"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Write a research paper about large language models",
+      "should_trigger": false,
+      "expected_output": "Should NOT trigger read-paper skill — this is about writing, not reading existing papers",
+      "expectations": [
+        "Does not invoke the read-paper skill",
+        "Helps the user draft/write content instead"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Help me draft a literature review section",
+      "should_trigger": false,
+      "expected_output": "Should NOT trigger — writing assistance, not paper reading",
+      "expectations": [
+        "Does not invoke the read-paper skill",
+        "Provides writing guidance instead"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "What's the best format for an academic paper?",
+      "should_trigger": false,
+      "expected_output": "Should NOT trigger — general academic writing question",
+      "expectations": [
+        "Does not invoke the read-paper skill",
+        "Answers the formatting question directly"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "Read the file at /tmp/report.pdf and summarize it",
+      "should_trigger": false,
+      "expected_output": "Should NOT trigger — reading a specific PDF file, not a ZoFiles paper",
+      "expectations": [
+        "Does not invoke the read-paper skill",
+        "Reads the specified PDF file directly"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "How do I install Zotero?",
+      "should_trigger": false,
+      "expected_output": "Should NOT trigger — Zotero question, not about reading papers",
+      "expectations": [
+        "Does not invoke the read-paper skill",
+        "Provides Zotero installation guidance"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "Cite these three papers in my essay: 2301.07041, 2310.06825, 1706.03762",
+      "should_trigger": true,
+      "expected_output": "Reads paper.bib from each paper folder and provides citations",
+      "expectations": [
+        "Finds all three paper folders by arXiv ID",
+        "Reads paper.bib from each",
+        "Returns BibTeX entries verbatim"
+      ]
+    }
+  ]
+}
