@@ -61,6 +61,9 @@ python .claude/skills/zotero-connector/scripts/import_arxiv.py --dry-run 2301.07
 # Force import (skip duplicate check)
 python .claude/skills/zotero-connector/scripts/import_arxiv.py --force 2301.07041
 
+# Ignore duplicates — silently skip without showing in progress or output
+python .claude/skills/zotero-connector/scripts/import_arxiv.py --ignore-duplicates 2301.07041 2310.06825
+
 # Parallel import (up to 5 concurrent)
 python .claude/skills/zotero-connector/scripts/import_arxiv.py --parallel 3 ID1 ID2 ID3 ID4 ID5
 

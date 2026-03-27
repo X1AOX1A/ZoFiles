@@ -814,11 +814,12 @@ class ProgressDisplay:
         ImportStatus.DRY_RUN: "Would import",
     }
 
-    def __init__(self, total: int, dry_run: bool = False):
+    def __init__(self, total: int, dry_run: bool = False, ignore_duplicates: bool = False):
         self._total = total
         self._current = 0
         self._lock = threading.Lock()
         self._dry_run = dry_run
+        self._ignore_duplicates = ignore_duplicates
 
     def header(
         self,
@@ -886,7 +887,8 @@ class ProgressDisplay:
         else:
             parts.append(f"\033[32m\u2713\033[0m Imported: {result.imported}")
 
-        parts.append(f"\033[33m\u2298\033[0m Duplicates: {result.duplicates}")
+        if not self._ignore_duplicates:
+            parts.append(f"\033[33m\u2298\033[0m Duplicates: {result.duplicates}")
         parts.append(f"\033[31m\u2717\033[0m Failed: {result.failed}")
 
         self._err("  " + "  ".join(parts))
@@ -940,6 +942,11 @@ def parse_args() -> argparse.Namespace:
         "--force",
         action="store_true",
         help="Import even if duplicates are detected",
+    )
+    parser.add_argument(
+        "--ignore-duplicates",
+        action="store_true",
+        help="Silently skip duplicates without showing them in progress or output",
     )
     parser.add_argument(
         "--parallel",
@@ -1087,7 +1094,7 @@ def main():
             )
 
     # ── Step 5: Display header ──
-    progress = ProgressDisplay(total=len(papers) + len(invalid_ids), dry_run=args.dry_run)
+    progress = ProgressDisplay(total=len(papers) + len(invalid_ids), dry_run=args.dry_run, ignore_duplicates=args.ignore_duplicates)
     progress.header(connected, detector.method, detector.count, collection_info)
 
     # ── Step 6: Report invalid IDs ──
@@ -1103,15 +1110,25 @@ def main():
 
     # ── Step 7: Check duplicates ──
     to_fetch: List[ArxivPaper] = []
+    ignored_duplicates = 0
     for paper in papers:
         if not args.force and detector.is_duplicate(paper.arxiv_id):
-            paper.status = ImportStatus.DUPLICATE
-            paper.title = f"(existing in {detector.method})"
-            result.duplicates += 1
-            result.papers.append(paper)
-            progress.update(paper)
+            if args.ignore_duplicates:
+                # Silently skip — don't display, don't count, don't add to result
+                ignored_duplicates += 1
+            else:
+                paper.status = ImportStatus.DUPLICATE
+                paper.title = f"(existing in {detector.method})"
+                result.duplicates += 1
+                result.papers.append(paper)
+                progress.update(paper)
         else:
             to_fetch.append(paper)
+
+    # Adjust progress total to exclude silently ignored duplicates
+    if ignored_duplicates > 0:
+        progress._total -= ignored_duplicates
+        result.total -= ignored_duplicates
 
     # ── Step 8: Fetch metadata ──
     if to_fetch:
@@ -1203,11 +1220,6 @@ def main():
             for p in result.papers
             if p.status == ImportStatus.IMPORTED
         ],
-        "duplicates": [
-            {"id": p.arxiv_id, "title": p.title}
-            for p in result.papers
-            if p.status == ImportStatus.DUPLICATE
-        ],
         "failed": [
             {"id": p.arxiv_id, "error": p.error}
             for p in result.papers
@@ -1221,6 +1233,12 @@ def main():
         "collection": collection_key,
         "detection_method": detector.method,
     }
+    if not args.ignore_duplicates:
+        output["duplicates"] = [
+            {"id": p.arxiv_id, "title": p.title}
+            for p in result.papers
+            if p.status == ImportStatus.DUPLICATE
+        ]
     print(json.dumps(output, indent=2, ensure_ascii=False))
 
     # Exit code
