@@ -525,88 +525,56 @@ class ZoteroConnector:
             return []
 
     def resolve_collection(self, name_or_key: str) -> Optional[Tuple[str, str]]:
-        """Resolve a collection name/key to (id, name). Returns None if not found.
+        """Resolve a collection by connector ID or exact path.
 
-        Supports:
-          - Exact connector ID: "C156" or "156"
-          - Exact name (case-insensitive): "Agent"
-          - Path with "/" for disambiguation: "Agent/Agent", "By Topic/Agent"
-          - Substring match (only if unambiguous): "CoAgent" → "CodeAgent"
+        Supports two forms only:
+          - Connector ID: "C156" or "156"
+          - Exact path (suffix match, case-insensitive): "Agent/Agent", "By Topic/Agent"
+            A single name like "Agent" is treated as a one-segment path.
         """
         collections = self.get_collections()
         if not collections:
             return None
 
-        # Exact id match (e.g., "C156" or just the number "156")
+        # 1. Exact connector ID match (e.g., "C156" or "156")
         for c in collections:
             cid = c.get("id", "")
             if cid == name_or_key or cid == f"C{name_or_key}":
                 return (cid, c.get("name", ""))
 
-        # Build full paths for each collection from the flat level-ordered list.
-        # The list is in pre-order traversal; each item has a "level" field (1-based).
-        # We maintain a stack of ancestor names to reconstruct paths.
-        ancestor_stack: List[str] = []  # stack of (name) at each level
-        collection_paths: List[Tuple[str, dict]] = []  # (full_path, collection)
+        # 2. Path match — build full paths from the flat level-ordered list,
+        #    then match the query as a suffix of the full path.
+        ancestor_stack: List[str] = []
+        collection_paths: List[Tuple[str, dict]] = []
 
         for c in collections:
             level = c.get("level", 1)
             name = c.get("name", "")
-            # Trim stack to parent level
             ancestor_stack = ancestor_stack[: level - 1]
             ancestor_stack.append(name)
             full_path = "/".join(ancestor_stack)
             collection_paths.append((full_path, c))
 
-        is_path_query = "/" in name_or_key
+        query_parts = [p.strip().lower() for p in name_or_key.split("/")]
 
-        if is_path_query:
-            # Path match: compare the query as a suffix of the full path
-            lower_query = name_or_key.lower()
-            query_parts = [p.strip() for p in lower_query.split("/")]
+        matches = []
+        for full_path, c in collection_paths:
+            path_parts = [p.lower() for p in full_path.split("/")]
+            if len(path_parts) >= len(query_parts):
+                if path_parts[-len(query_parts) :] == query_parts:
+                    matches.append((full_path, c))
 
-            # Exact suffix match (e.g. "Agent/Agent" matches "By Topic/Agent/Agent")
-            for full_path, c in collection_paths:
-                path_parts = [p.lower() for p in full_path.split("/")]
-                if len(path_parts) >= len(query_parts):
-                    if path_parts[-len(query_parts) :] == query_parts:
-                        return (c["id"], c["name"])
+        if len(matches) == 1:
+            return (matches[0][1]["id"], matches[0][1]["name"])
 
-            # Substring match on full path — only if unambiguous
-            matches = [
-                (fp, c)
-                for fp, c in collection_paths
-                if lower_query in fp.lower()
-            ]
-            if len(matches) == 1:
-                return (matches[0][1]["id"], matches[0][1]["name"])
-
-            return None
-
-        # Simple name match (no "/" in query)
-        lower_name = name_or_key.lower()
-
-        # Exact name match (case-insensitive) — only if unambiguous
-        exact_matches = [c for c in collections if c.get("name", "").lower() == lower_name]
-        if len(exact_matches) == 1:
-            return (exact_matches[0]["id"], exact_matches[0]["name"])
-
-        # Substring match (case-insensitive) — only if unambiguous
-        sub_matches = [c for c in collections if lower_name in c.get("name", "").lower()]
-        if len(sub_matches) == 1:
-            return (sub_matches[0]["id"], sub_matches[0]["name"])
-
-        # Ambiguous — show candidates
-        if exact_matches or sub_matches:
-            candidates = exact_matches or sub_matches
+        if len(matches) > 1:
             print(
-                f'WARNING: "{name_or_key}" matches {len(candidates)} collections. '
-                f"Use a path to disambiguate:",
+                f'ERROR: "{name_or_key}" matches {len(matches)} collections. '
+                f"Use a longer path or ID to disambiguate:",
                 file=sys.stderr,
             )
-            for fp, c in collection_paths:
-                if c in candidates:
-                    print(f'  --collection "{fp}" ({c["id"]})', file=sys.stderr)
+            for fp, c in matches:
+                print(f'  --collection "{fp}" ({c["id"]})', file=sys.stderr)
             print("", file=sys.stderr)
 
         return None
@@ -1018,7 +986,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--collection",
         metavar="NAME",
-        help="Target collection (fuzzy name match or connector ID like C123)",
+        help="Target collection (exact path like 'Agent/Agent' or connector ID like C123)",
     )
     parser.add_argument(
         "--dry-run",

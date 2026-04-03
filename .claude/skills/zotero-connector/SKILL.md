@@ -9,134 +9,114 @@ description: |
 
 # Zotero Connector — arXiv Paper Importer
 
-## What This Does
+Import arXiv papers into Zotero via the local connector API (`localhost:23119`).
+The script handles everything: ID normalization, duplicate detection, metadata fetch,
+PDF download, and optional collection targeting.
 
-Imports arXiv papers into a running Zotero instance via the local connector API (localhost:23119).
-Supports batch import, duplicate detection (via ZoFiles index or Zotero SQLite), progress display,
-and optional collection targeting.
+## Script Location
+
+```
+.claude/skills/zotero-connector/scripts/import_arxiv.py
+```
+
+Python 3.8+ required, stdlib only (no pip install needed).
+
+## Quick Reference
+
+```bash
+SCRIPT=".claude/skills/zotero-connector/scripts/import_arxiv.py"
+
+# Single paper
+python $SCRIPT 2301.07041
+
+# Multiple papers
+python $SCRIPT 2301.07041 2310.06825 1706.03762
+
+# Into a specific collection (by path or ID)
+python $SCRIPT --collection "By Topic/Agent" 2301.07041
+python $SCRIPT --collection C148 2301.07041
+
+# Dry run — check duplicates without importing
+python $SCRIPT --dry-run 2301.07041 2310.06825
+
+# Force import (skip duplicate check)
+python $SCRIPT --force 2301.07041
+
+# Silently skip duplicates (don't show them at all)
+python $SCRIPT --ignore-duplicates 2301.07041 2310.06825
+
+# Parallel import (up to 5 concurrent)
+python $SCRIPT --parallel 3 ID1 ID2 ID3 ID4 ID5
+
+# List all collections
+python $SCRIPT --list-collections
+```
+
+## Input Formats
+
+The script accepts arXiv IDs in any form — it normalizes them automatically:
+
+| Format       | Example                            |
+| ------------ | ---------------------------------- |
+| New-style ID | `2301.07041`                       |
+| With version | `2301.07041v2` (version stripped)  |
+| Old-style ID | `hep-th/0601001`                   |
+| Full URL     | `https://arxiv.org/abs/2301.07041` |
+| Prefixed     | `arXiv:2301.07041`                 |
+| DOI form     | `10.48550/arXiv.2301.07041`        |
+
+## Collection Targeting
+
+When importing, use `--collection` to place papers in a specific Zotero collection.
+The argument can be a connector ID (`C148`) or a path suffix (`Agent/Agent`, `By Topic/Agent`).
+Path matching is case-insensitive and matches from the end, so `"Agent"` matches any
+collection named "Agent" (ambiguous matches produce an error with suggestions).
+
+### Collection Cache
+
+A cache of the collection tree lives at `.claude/skills/zotero-connector/scripts/collections`.
+**Always read the cache first** to resolve collection names — avoid calling `--list-collections`
+on every import:
+
+```bash
+# Read existing cache
+cat .claude/skills/zotero-connector/scripts/collections
+
+# Refresh if missing or stale (--collection failed with "not found")
+python $SCRIPT --list-collections > .claude/skills/zotero-connector/scripts/collections
+```
+
+## Duplicate Detection
+
+The script auto-detects duplicates using a multi-strategy fallback (no configuration needed):
+
+1. **ZoFiles index** (`.zofiles-index.json`) — fastest, auto-detected from Zotero prefs
+2. **Zotero SQLite** — comprehensive, reads the database in immutable mode (safe while Zotero runs)
+3. **None available** — warns and continues without dedup
+
+Override the index path with `--zofiles-index /path/to/.zofiles-index.json` if auto-detection fails.
+
+## Output
+
+- **Progress** → stderr (colored, human-readable)
+- **JSON result** → stdout (machine-parseable)
+- **Exit codes**: 0 = success, 1 = fatal error, 2 = partial failure
 
 ## Prerequisites
 
-- Zotero 7/8 must be running locally
-- **Zotero HTTP Server must be enabled** (connector API on `localhost:23119`):
-  - Zotero 7/8: Edit → Settings → Advanced → Check **"Allow other applications on this computer to communicate with Zotero"**
-  - This is enabled by default. If the script reports "Cannot connect to Zotero", verify this setting is on and Zotero is running.
-- Python 3.8+ available in PATH
-- Default python path:
+- Zotero 7/8 running locally with the HTTP server enabled (Edit → Settings → Advanced →
+  "Allow other applications on this computer to communicate with Zotero" — on by default)
+- Python 3.8+
 
-  ```bash
-  <FILL_IN: ASK USER FOR THE DEFAULT PYTHON PATH AND UPDATE THIS FILE>
-  ```
+## How It Works (internals)
 
-## Usage
-
-Always run the script with `--help` first to see full usage:
-
-```bash
-python .claude/skills/zotero-connector/scripts/import_arxiv.py --help
-```
-
-### Basic Import
-
-```bash
-# Single paper
-python .claude/skills/zotero-connector/scripts/import_arxiv.py 2301.07041
-
-# Multiple papers
-python .claude/skills/zotero-connector/scripts/import_arxiv.py 2301.07041 2310.06825 1706.03762
-
-# From a file (one ID per line)
-cat arxiv_ids.txt | xargs python .claude/skills/zotero-connector/scripts/import_arxiv.py
-```
-
-### Options
-
-```bash
-# List all collections with IDs (use before --collection to find the right target)
-python .claude/skills/zotero-connector/scripts/import_arxiv.py --list-collections
-
-# Target a specific collection (fuzzy name match or connector ID like C156)
-python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection "LLM Papers" 2301.07041
-python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection C148 2301.07041
-
-# Use path syntax to disambiguate collections with the same name
-python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection "Agent/Agent" 2301.07041
-python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection "By Topic/Agent" 2301.07041
-```
-
-### Collection Lookup (cached)
-
-A cache file at `.claude/skills/zotero-connector/scripts/collections` stores the collection tree.
-**Always read the cache first** instead of running `--list-collections` every time:
-
-```bash
-# 1. Check if cache exists — if so, just read it
-cat .claude/skills/zotero-connector/scripts/collections
-
-# 2. If the file doesn't exist, or --collection fails with "not found", refresh it:
-python .claude/skills/zotero-connector/scripts/import_arxiv.py --list-collections \
-  > .claude/skills/zotero-connector/scripts/collections
-```
-
-The cache is a plain text file with one collection per line (ID + name + indentation).
-It never goes stale silently — if a collection ID no longer exists, `--collection` will
-fail and you should regenerate the cache.
-
-# Dry run — check duplicates without importing
-python .claude/skills/zotero-connector/scripts/import_arxiv.py --dry-run 2301.07041 2310.06825
-
-# Force import (skip duplicate check)
-python .claude/skills/zotero-connector/scripts/import_arxiv.py --force 2301.07041
-
-# Ignore duplicates — silently skip without showing in progress or output
-python .claude/skills/zotero-connector/scripts/import_arxiv.py --ignore-duplicates 2301.07041 2310.06825
-
-# Parallel import (up to 5 concurrent)
-python .claude/skills/zotero-connector/scripts/import_arxiv.py --parallel 3 ID1 ID2 ID3 ID4 ID5
-
-# Specify ZoFiles index path for duplicate detection
-python .claude/skills/zotero-connector/scripts/import_arxiv.py --zofiles-index /path/to/.zofiles-index.json 2301.07041
-```
-
-### Supported Input Formats
-
-The script accepts arXiv IDs in any of these formats:
-
-- `2301.07041` — new-style ID
-- `2301.07041v2` — with version (version stripped for dedup)
-- `hep-th/0601001` — old-style ID
-- `https://arxiv.org/abs/2301.07041` — full URL
-- `arXiv:2301.07041` — prefixed form
-
-### Output
-
-- **Progress** is displayed on stderr (visible in terminal)
-- **JSON result** is written to stdout (machine-parseable)
-- Exit codes: 0 = success, 1 = fatal error, 2 = partial failure
-
-## How It Works
-
-1. **Ping Zotero** — confirms connector is listening on localhost:23119
-2. **Normalize IDs** — strips URLs, prefixes, versions to get canonical arXiv IDs
-3. **Duplicate detection** (multi-strategy fallback):
-   - ZoFiles index (`.zofiles-index.json`) — fastest
-   - Zotero SQLite database — comprehensive
-   - No detection available — warns and continues
-4. **Fetch metadata** — batch query to arXiv API (up to 20 IDs per request, 3s rate limit)
-5. **Import** — POST each paper to Zotero connector with full metadata + PDF attachment.
-   If `--collection` is specified, calls `/connector/updateSession` after saving to move
-   the item into the target collection (the connector's `saveItems` ignores the `collections`
-   field in payloads and always saves to the currently selected collection in Zotero's UI).
-6. **Report** — summary of imported, skipped, and failed papers
-
-## When to Use This Skill
-
-Use when the user says things like:
-
-- "Import this arXiv paper: 2301.07041"
-- "Add these papers to Zotero"
-- "Batch import arXiv papers"
-- "Check if I already have paper 2301.07041"
-- "Import 2301.07041 into my LLM collection"
-- "List my Zotero collections"
-- "What collections do I have in Zotero?"
+1. Ping Zotero connector at `localhost:23119`
+2. Normalize all input IDs to canonical form
+3. Check duplicates (ZoFiles index → Zotero SQLite → skip)
+4. Batch-fetch metadata from arXiv API (20 IDs/request, 3s rate limit)
+5. POST each paper to `/connector/saveItems` (metadata + authors + tags)
+6. If `--collection` specified, call `/connector/updateSession` to move the item
+   (the connector's `saveItems` always saves to the UI-selected collection, so
+   `updateSession` is the only way to target a specific collection)
+7. Download PDF from arXiv and push via `/connector/saveAttachment`
+8. Report summary as JSON on stdout
