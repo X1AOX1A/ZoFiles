@@ -59,6 +59,10 @@ python .claude/skills/zotero-connector/scripts/import_arxiv.py --list-collection
 python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection "LLM Papers" 2301.07041
 python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection C148 2301.07041
 
+# Use path syntax to disambiguate collections with the same name
+python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection "Agent/Agent" 2301.07041
+python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection "By Topic/Agent" 2301.07041
+
 # Dry run — check duplicates without importing
 python .claude/skills/zotero-connector/scripts/import_arxiv.py --dry-run 2301.07041 2310.06825
 

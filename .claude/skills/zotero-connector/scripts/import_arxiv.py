@@ -525,7 +525,14 @@ class ZoteroConnector:
             return []
 
     def resolve_collection(self, name_or_key: str) -> Optional[Tuple[str, str]]:
-        """Resolve a collection name/key to (id, name). Returns None if not found."""
+        """Resolve a collection name/key to (id, name). Returns None if not found.
+
+        Supports:
+          - Exact connector ID: "C156" or "156"
+          - Exact name (case-insensitive): "Agent"
+          - Path with "/" for disambiguation: "Agent/Agent", "By Topic/Agent"
+          - Substring match (only if unambiguous): "CoAgent" → "CodeAgent"
+        """
         collections = self.get_collections()
         if not collections:
             return None
@@ -536,19 +543,71 @@ class ZoteroConnector:
             if cid == name_or_key or cid == f"C{name_or_key}":
                 return (cid, c.get("name", ""))
 
-        # Exact name match (case-insensitive)
-        lower_name = name_or_key.lower()
+        # Build full paths for each collection from the flat level-ordered list.
+        # The list is in pre-order traversal; each item has a "level" field (1-based).
+        # We maintain a stack of ancestor names to reconstruct paths.
+        ancestor_stack: List[str] = []  # stack of (name) at each level
+        collection_paths: List[Tuple[str, dict]] = []  # (full_path, collection)
+
         for c in collections:
-            if c.get("name", "").lower() == lower_name:
-                return (c["id"], c["name"])
+            level = c.get("level", 1)
+            name = c.get("name", "")
+            # Trim stack to parent level
+            ancestor_stack = ancestor_stack[: level - 1]
+            ancestor_stack.append(name)
+            full_path = "/".join(ancestor_stack)
+            collection_paths.append((full_path, c))
+
+        is_path_query = "/" in name_or_key
+
+        if is_path_query:
+            # Path match: compare the query as a suffix of the full path
+            lower_query = name_or_key.lower()
+            query_parts = [p.strip() for p in lower_query.split("/")]
+
+            # Exact suffix match (e.g. "Agent/Agent" matches "By Topic/Agent/Agent")
+            for full_path, c in collection_paths:
+                path_parts = [p.lower() for p in full_path.split("/")]
+                if len(path_parts) >= len(query_parts):
+                    if path_parts[-len(query_parts) :] == query_parts:
+                        return (c["id"], c["name"])
+
+            # Substring match on full path — only if unambiguous
+            matches = [
+                (fp, c)
+                for fp, c in collection_paths
+                if lower_query in fp.lower()
+            ]
+            if len(matches) == 1:
+                return (matches[0][1]["id"], matches[0][1]["name"])
+
+            return None
+
+        # Simple name match (no "/" in query)
+        lower_name = name_or_key.lower()
+
+        # Exact name match (case-insensitive) — only if unambiguous
+        exact_matches = [c for c in collections if c.get("name", "").lower() == lower_name]
+        if len(exact_matches) == 1:
+            return (exact_matches[0]["id"], exact_matches[0]["name"])
 
         # Substring match (case-insensitive) — only if unambiguous
-        matches = []
-        for c in collections:
-            if lower_name in c.get("name", "").lower():
-                matches.append(c)
-        if len(matches) == 1:
-            return (matches[0]["id"], matches[0]["name"])
+        sub_matches = [c for c in collections if lower_name in c.get("name", "").lower()]
+        if len(sub_matches) == 1:
+            return (sub_matches[0]["id"], sub_matches[0]["name"])
+
+        # Ambiguous — show candidates
+        if exact_matches or sub_matches:
+            candidates = exact_matches or sub_matches
+            print(
+                f'WARNING: "{name_or_key}" matches {len(candidates)} collections. '
+                f"Use a path to disambiguate:",
+                file=sys.stderr,
+            )
+            for fp, c in collection_paths:
+                if c in candidates:
+                    print(f'  --collection "{fp}" ({c["id"]})', file=sys.stderr)
+            print("", file=sys.stderr)
 
         return None
 
