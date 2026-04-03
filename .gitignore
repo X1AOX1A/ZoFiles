@@ -8,3 +8,4 @@ node_modules/
 *.log
 *.tsbuildinfo
 .DS_Store
+.claude/skills/zotero-connector/scripts/collections

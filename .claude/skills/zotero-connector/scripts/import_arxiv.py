@@ -960,7 +960,11 @@ class ProgressDisplay:
 
 
 def print_collections(connector: ZoteroConnector) -> None:
-    """Print all Zotero collections with hierarchy."""
+    """Print all Zotero collections with hierarchy.
+
+    Collection lines go to stdout (so `> file` captures them cleanly).
+    Header/footer chrome goes to stderr.
+    """
     collections = connector.get_collections()
     if not collections:
         print("No collections found (or Zotero not connected).", file=sys.stderr)
@@ -972,7 +976,7 @@ def print_collections(connector: ZoteroConnector) -> None:
         indent = "  " * c.get("level", 1)
         cid = c.get("id", "")
         name = c.get("name", "")
-        print(f"  {indent}{cid:6s}  {name}", file=sys.stderr)
+        print(f"{indent}{cid:6s}  {name}")  # stdout
     print("━" * 50, file=sys.stderr)
     print(
         '\nUsage: --collection "Name" or --collection C123',

@@ -62,6 +62,25 @@ python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection C148
 # Use path syntax to disambiguate collections with the same name
 python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection "Agent/Agent" 2301.07041
 python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection "By Topic/Agent" 2301.07041
+```
+
+### Collection Lookup (cached)
+
+A cache file at `.claude/skills/zotero-connector/scripts/collections` stores the collection tree.
+**Always read the cache first** instead of running `--list-collections` every time:
+
+```bash
+# 1. Check if cache exists — if so, just read it
+cat .claude/skills/zotero-connector/scripts/collections
+
+# 2. If the file doesn't exist, or --collection fails with "not found", refresh it:
+python .claude/skills/zotero-connector/scripts/import_arxiv.py --list-collections \
+  > .claude/skills/zotero-connector/scripts/collections
+```
+
+The cache is a plain text file with one collection per line (ID + name + indentation).
+It never goes stale silently — if a collection ID no longer exists, `--collection` will
+fail and you should regenerate the cache.
 
 # Dry run — check duplicates without importing
 python .claude/skills/zotero-connector/scripts/import_arxiv.py --dry-run 2301.07041 2310.06825
