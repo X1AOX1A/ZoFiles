@@ -900,6 +900,27 @@ class ProgressDisplay:
 # =============================================================================
 
 
+def print_collections(connector: ZoteroConnector) -> None:
+    """Print all Zotero collections with hierarchy."""
+    collections = connector.get_collections()
+    if not collections:
+        print("No collections found (or Zotero not connected).", file=sys.stderr)
+        return
+
+    print(f"\nZotero Collections ({len(collections)} total):", file=sys.stderr)
+    print("━" * 50, file=sys.stderr)
+    for c in collections:
+        indent = "  " * c.get("level", 1)
+        cid = c.get("id", "")
+        name = c.get("name", "")
+        print(f"  {indent}{cid:6s}  {name}", file=sys.stderr)
+    print("━" * 50, file=sys.stderr)
+    print(
+        '\nUsage: --collection "Name" or --collection C123',
+        file=sys.stderr,
+    )
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Import arXiv papers into Zotero via local connector API.",
@@ -913,6 +934,7 @@ def parse_args() -> argparse.Namespace:
               arXiv:2301.07041            prefixed form
 
             Examples:
+              %(prog)s --list-collections
               %(prog)s 2301.07041
               %(prog)s --collection "LLM Papers" 2301.07041 2310.06825
               %(prog)s --dry-run 2301.07041 2310.06825 1706.03762
@@ -921,14 +943,19 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "arxiv_ids",
-        nargs="+",
+        nargs="*",
         metavar="ARXIV_ID",
         help="arXiv IDs to import (any format)",
     )
     parser.add_argument(
+        "--list-collections",
+        action="store_true",
+        help="List all Zotero collections with IDs and exit",
+    )
+    parser.add_argument(
         "--collection",
         metavar="NAME",
-        help="Target collection (fuzzy name match or exact key)",
+        help="Target collection (fuzzy name match or connector ID like C123)",
     )
     parser.add_argument(
         "--dry-run",
@@ -1003,10 +1030,29 @@ def import_single_paper(
 def main():
     args = parse_args()
 
+    connector = ZoteroConnector(zotero_data_dir=args.zotero_data)
+
+    # ── List collections and exit ──
+    if args.list_collections:
+        if not connector.ping():
+            print(
+                "ERROR: Zotero is not running. Please start Zotero and try again.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        print_collections(connector)
+        sys.exit(0)
+
+    # ── Require at least one arXiv ID for import ──
+    if not args.arxiv_ids:
+        print(
+            "ERROR: No arXiv IDs provided. Use --list-collections or provide ARXIV_IDs.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     # Clamp parallel
     parallel = max(1, min(args.parallel, MAX_PARALLEL))
-
-    connector = ZoteroConnector(zotero_data_dir=args.zotero_data)
     arxiv_api = ArxivAPI()
 
     # ── Step 1: Normalize IDs ──

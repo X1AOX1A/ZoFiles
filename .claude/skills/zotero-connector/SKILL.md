@@ -3,7 +3,7 @@ name: zotero-connector
 description: |
   Import arXiv papers into Zotero with duplicate detection and batch support.
   TRIGGER when: user asks to import papers, add arxiv papers to zotero, batch import papers,
-  check for duplicate papers in zotero, or mentions importing by arXiv ID.
+  check for duplicate papers in zotero, mentions importing by arXiv ID, or wants to list Zotero collections.
   DO NOT TRIGGER when: user is working on ZoFiles plugin code, exporting papers, or general Zotero questions.
 ---
 
@@ -52,8 +52,12 @@ cat arxiv_ids.txt | xargs python .claude/skills/zotero-connector/scripts/import_
 ### Options
 
 ```bash
-# Target a specific collection (fuzzy name match or exact key)
+# List all collections with IDs (use before --collection to find the right target)
+python .claude/skills/zotero-connector/scripts/import_arxiv.py --list-collections
+
+# Target a specific collection (fuzzy name match or connector ID like C156)
 python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection "LLM Papers" 2301.07041
+python .claude/skills/zotero-connector/scripts/import_arxiv.py --collection C148 2301.07041
 
 # Dry run — check duplicates without importing
 python .claude/skills/zotero-connector/scripts/import_arxiv.py --dry-run 2301.07041 2310.06825
@@ -96,7 +100,10 @@ The script accepts arXiv IDs in any of these formats:
    - Zotero SQLite database — comprehensive
    - No detection available — warns and continues
 4. **Fetch metadata** — batch query to arXiv API (up to 20 IDs per request, 3s rate limit)
-5. **Import** — POST each paper to Zotero connector with full metadata + PDF attachment
+5. **Import** — POST each paper to Zotero connector with full metadata + PDF attachment.
+   If `--collection` is specified, calls `/connector/updateSession` after saving to move
+   the item into the target collection (the connector's `saveItems` ignores the `collections`
+   field in payloads and always saves to the currently selected collection in Zotero's UI).
 6. **Report** — summary of imported, skipped, and failed papers
 
 ## When to Use This Skill
@@ -108,3 +115,5 @@ Use when the user says things like:
 - "Batch import arXiv papers"
 - "Check if I already have paper 2301.07041"
 - "Import 2301.07041 into my LLM collection"
+- "List my Zotero collections"
+- "What collections do I have in Zotero?"
