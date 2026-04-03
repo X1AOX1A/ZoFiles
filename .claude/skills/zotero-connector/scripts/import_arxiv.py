@@ -494,7 +494,6 @@ class ZoteroConnector:
     def __init__(self, base_url: str = ZOTERO_CONNECTOR_URL, zotero_data_dir: Optional[str] = None):
         self.base_url = base_url
         self._zotero_data_dir = zotero_data_dir
-        self._collection_key_map: Optional[Dict[int, str]] = None
 
     def ping(self) -> bool:
         """Check if Zotero is running."""
@@ -553,62 +552,56 @@ class ZoteroConnector:
 
         return None
 
-    def connector_id_to_key(self, connector_id: str) -> Optional[str]:
-        """Convert connector ID (like 'C156') to Zotero collection key (like 'VZNA2GMG').
+    def update_session(self, session_id: str, target_id: str) -> bool:
+        """Move saved items to a target collection via /connector/updateSession.
 
-        The connector API uses C{collectionID} format, but saveItems expects
-        the actual 8-char alphanumeric key. We resolve via Zotero's SQLite DB.
+        Zotero's saveItems endpoint ignores the 'collections' field in item
+        payloads — it always saves to the currently selected collection in
+        the UI. To place items in a specific collection we must call
+        updateSession *after* saveItems, which moves the already-saved items.
+
+        Args:
+            session_id: The session ID used in the saveItems call.
+            target_id: Connector-format target ID (e.g. 'C156' for collection 156).
         """
-        if not connector_id.startswith("C"):
-            return connector_id  # might already be a key
-
-        numeric_id = connector_id[1:]
-        if not numeric_id.isdigit():
-            return None
-
-        # Try to resolve via SQLite
-        zotero_dir = self._zotero_data_dir
-        if not zotero_dir:
-            # Auto-detect
-            home = pathlib.Path.home()
-            for candidate in [home / "Zotero", home / "Local" / "Zotero", home / "Documents" / "Zotero"]:
-                if candidate.is_dir() and (candidate / "zotero.sqlite").exists():
-                    zotero_dir = str(candidate)
-                    break
-
-        if not zotero_dir:
-            return None
-
-        db_path = os.path.join(zotero_dir, "zotero.sqlite")
-        if not os.path.exists(db_path):
-            return None
+        payload = json.dumps({
+            "sessionID": session_id,
+            "target": target_id,
+        }).encode("utf-8")
 
         try:
-            uri = f"file:{db_path}?immutable=1"
-            conn = sqlite3.connect(uri, uri=True, timeout=5)
-            cursor = conn.execute(
-                "SELECT key FROM collections WHERE collectionID = ?",
-                (int(numeric_id),),
+            req = urllib.request.Request(
+                f"{self.base_url}/connector/updateSession",
+                data=payload,
+                method="POST",
             )
-            row = cursor.fetchone()
-            conn.close()
-            return row[0] if row else None
-        except (sqlite3.OperationalError, sqlite3.DatabaseError):
-            return None
+            req.add_header("Content-Type", "application/json")
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return resp.status in (200, 201)
+        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError):
+            return False
 
-    def save_item(self, paper: ArxivPaper, collection_key: Optional[str] = None) -> bool:
+    def save_item(
+        self,
+        paper: ArxivPaper,
+        collection_target: Optional[str] = None,
+    ) -> bool:
         """Import a paper via /connector/saveItems + /connector/saveAttachment.
 
-        This is a two-step process matching what the browser Connector does:
-        1. POST /connector/saveItems — saves metadata only (attachments ignored)
-        2. Download PDF from arXiv, then POST /connector/saveAttachment — streams
+        This is a multi-step process:
+        1. POST /connector/saveItems — saves metadata (goes to currently selected
+           collection in Zotero's UI, since the connector ignores the 'collections'
+           field in the item payload).
+        2. POST /connector/updateSession — if a target collection is specified,
+           moves the item to that collection.
+        3. Download PDF from arXiv, then POST /connector/saveAttachment — streams
            the PDF binary to Zotero, linking it to the parent item via session.
         """
         # Generate unique session & item IDs (matches Zotero.Utilities.randomString())
         session_id = self._random_string(32)
         connector_item_id = self._random_string(32)
 
-        item = self._build_item(paper, collection_key, session_id, connector_item_id)
+        item = self._build_item(paper, session_id=session_id, connector_item_id=connector_item_id)
         payload = json.dumps(item).encode("utf-8")
 
         # Step 1: Save metadata
@@ -630,7 +623,16 @@ class ZoteroConnector:
             paper.error = f"Connector error: {e}"
             return False
 
-        # Step 2: Download PDF from arXiv and push to Zotero
+        # Step 2: Move to target collection via updateSession
+        if collection_target:
+            if not self.update_session(session_id, collection_target):
+                paper.error = (
+                    f"updateSession failed for target {collection_target} "
+                    f"(metadata saved to default collection)"
+                )
+                # Not fatal — item was created, just in wrong collection
+
+        # Step 3: Download PDF from arXiv and push to Zotero
         pdf_url = f"https://arxiv.org/pdf/{paper.arxiv_id}"
         try:
             pdf_data = self._download_pdf(pdf_url)
@@ -706,7 +708,6 @@ class ZoteroConnector:
     def _build_item(
         self,
         paper: ArxivPaper,
-        collection_key: Optional[str] = None,
         session_id: Optional[str] = None,
         connector_item_id: Optional[str] = None,
     ) -> dict:
@@ -760,9 +761,6 @@ class ZoteroConnector:
             }
         ]
 
-        # Collections
-        collections = [collection_key] if collection_key else []
-
         item = {
             "sessionID": session_id or self._random_string(32),
             "items": [
@@ -781,7 +779,6 @@ class ZoteroConnector:
                     "extra": extra,
                     "tags": tags,
                     "attachments": attachments,
-                    "collections": collections,
                     "notes": [],
                 }
             ],
@@ -971,7 +968,7 @@ def parse_args() -> argparse.Namespace:
 def import_single_paper(
     paper: ArxivPaper,
     connector: ZoteroConnector,
-    collection_key: Optional[str],
+    collection_target: Optional[str],
     progress: ProgressDisplay,
     dry_run: bool,
     import_lock: threading.Lock,
@@ -991,7 +988,7 @@ def import_single_paper(
     with import_lock:
         time.sleep(IMPORT_DELAY)
 
-    success = connector.save_item(paper, collection_key)
+    success = connector.save_item(paper, collection_target)
     if success:
         paper.status = ImportStatus.IMPORTED
     else:
@@ -1054,24 +1051,14 @@ def main():
 
     # ── Step 4: Resolve collection ──
     collection_info: Optional[Tuple[str, str]] = None
-    collection_key: Optional[str] = None
+    collection_target: Optional[str] = None  # connector ID like "C156"
     if args.collection:
         if connected:
             collection_info = connector.resolve_collection(args.collection)
             if collection_info:
-                connector_id = collection_info[0]
-                # Convert connector ID (C156) to actual Zotero key (VZNA2GMG)
-                real_key = connector.connector_id_to_key(connector_id)
-                if real_key:
-                    collection_key = real_key
-                else:
-                    # Fallback: use connector ID as-is (may not work for saveItems)
-                    collection_key = connector_id
-                    print(
-                        f'WARNING: Could not resolve collection key for {connector_id}. '
-                        f'Import to collection may fail.',
-                        file=sys.stderr,
-                    )
+                # Use the connector ID (e.g. "C156") directly — updateSession
+                # expects this format, not the 8-char Zotero key
+                collection_target = collection_info[0]
             else:
                 print(
                     f'ERROR: Collection "{args.collection}" not found.',
@@ -1174,7 +1161,7 @@ def main():
                 futures = [
                     executor.submit(
                         import_single_paper,
-                        paper, connector, collection_key, progress,
+                        paper, connector, collection_target, progress,
                         args.dry_run, import_lock,
                     )
                     for paper in to_import
@@ -1190,7 +1177,7 @@ def main():
             # Sequential import
             for paper in to_import:
                 import_single_paper(
-                    paper, connector, collection_key, progress,
+                    paper, connector, collection_target, progress,
                     args.dry_run, import_lock,
                 )
                 result.papers.append(paper)
@@ -1230,7 +1217,7 @@ def main():
             for p in result.papers
             if p.status == ImportStatus.DRY_RUN
         ],
-        "collection": collection_key,
+        "collection": collection_target,
         "detection_method": detector.method,
     }
     if not args.ignore_duplicates:
