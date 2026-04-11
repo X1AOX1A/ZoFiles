@@ -96,6 +96,8 @@ Accepts any arXiv ID format: `2301.07041`, `2301.07041v2`, `https://arxiv.org/ab
 
 ## Configuration
 
+![settings](docs/settings.png)
+
 All settings are in **Zotero > Settings > ZoFiles**.
 
 | Setting       | Description                                | Default               |
