@@ -14,11 +14,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zofiles/ZoFiles.git"
+    "url": "git+https://github.com/X1AOX1A/ZoFiles.git"
   },
-  "homepage": "https://github.com/zofiles/ZoFiles#readme",
+  "homepage": "https://github.com/X1AOX1A/ZoFiles#readme",
   "bugs": {
-    "url": "https://github.com/zofiles/ZoFiles/issues"
+    "url": "https://github.com/X1AOX1A/ZoFiles/issues"
   },
   "scripts": {
     "start": "zotero-plugin serve",
