@@ -1,3 +1,5 @@
+
+
 # ZoFiles
 
 [![zotero target version](https://img.shields.io/badge/Zotero-7-green?style=flat-square&logo=zotero&logoColor=CC2936)](https://www.zotero.org)
@@ -12,7 +14,7 @@ ZoFiles turns your Zotero library into an agent-readable filesystem — mirrorin
 
 **Requirements:** Zotero 7+ &bull; macOS / Linux (symlink mode) or Windows (copy mode) &bull; Papers with arXiv IDs
 
-1. **Install** — Download the latest `.xpi` from [Releases](../../releases). In Zotero: **Tools > Add-ons > gear icon > Install Add-on From File**. Restart Zotero.
+1. **Install** — Download the latest `.xpi` from [Releases](https://github.com/X1AOX1A/ZoFiles/releases). In Zotero: **Tools > Add-ons > gear icon > Install Add-on From File**. Restart Zotero.
 2. **Configure** — Go to **Zotero > Settings > ZoFiles**. Set your **Export Root** directory and choose which collections/content to export.
 3. **Export** — Click **Rebuild** at the bottom of the settings panel. Your paper tree will appear in the export root.
 
